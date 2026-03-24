@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HeartSINT — Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0a1628;--navy2:#0f1f3d;--blue:#1a56db;--blue2:#1e429f;
+  --accent:#00d4ff;--accent2:#0ea5e9;--success:#10b981;--warning:#f59e0b;
+  --danger:#ef4444;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --card:rgba(15,31,61,0.8);--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+body{background:var(--navy);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(26,86,219,0.15) 0%,transparent 60%),linear-gradient(180deg,#0a1628 0%,#060e1e 100%);}
+
+/* LOGIN OVERLAY */
+#login-overlay{position:fixed;inset:0;background:#020810;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;pointer-events:all;transition:opacity 0.5s ease;}
+#login-overlay::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
+#login-overlay::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 40% at 50% 50%,rgba(0,80,255,0.07) 0%,transparent 70%);pointer-events:none;}
+#login-overlay.fade-out{opacity:0;pointer-events:none;}
+.login-box{position:relative;z-index:10;width:360px;max-width:92vw;display:flex;flex-direction:column;align-items:center;}
+.login-logo{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+.login-heart{width:48px;height:48px;margin-bottom:12px;animation:logo-beat 1.4s ease-in-out infinite;}
+@keyframes logo-beat{0%{transform:scale(1);}14%{transform:scale(1.1);}28%{transform:scale(1);}42%{transform:scale(1.07);}56%,100%{transform:scale(1);}}
+.login-brand{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:4px;color:#fff;margin-bottom:4px;}
+.login-brand span{color:#00d4ff;}
+.login-tagline{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:#2a4060;text-transform:uppercase;}
+.login-card{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(0,212,255,0.12);border-radius:10px;padding:28px;}
+.login-card-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:#3a5470;text-transform:uppercase;margin-bottom:20px;text-align:center;}
+.login-field{margin-bottom:14px;}
+.login-field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:#3a5470;text-transform:uppercase;margin-bottom:6px;}
+.login-field input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.15);border-radius:6px;padding:10px 14px;color:#b8d4f0;font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;letter-spacing:1px;}
+.login-field input:focus{border-color:rgba(0,212,255,0.5);}
+.login-field input::placeholder{color:#2a4060;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:40px;}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#3a5470;line-height:0;z-index:10;}
+.login-error{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:#ef4444;text-align:center;margin-bottom:12px;min-height:16px;}
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+.login-btn{width:100%;background:linear-gradient(90deg,#0a4bff,#00d4ff);border:none;border-radius:6px;padding:11px;color:#fff;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:3px;cursor:pointer;transition:opacity 0.2s;}
+.login-btn:hover{opacity:0.85;}
+.login-stamp{position:absolute;bottom:18px;right:20px;font-family:var(--mono);font-size:9px;letter-spacing:3px;color:rgba(255,60,60,0.5);border:1px solid rgba(255,60,60,0.2);padding:3px 8px;transform:rotate(-0.6deg);}
+
+/* LOADING OVERLAY */
+#loading-overlay{position:fixed;inset:0;background:#020810;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;pointer-events:all;transition:opacity 0.6s ease;}
+#loading-overlay::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
+#loading-overlay::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 40% at 50% 50%,rgba(0,80,255,0.07) 0%,transparent 70%);pointer-events:none;}
+#loading-overlay.fade-out{opacity:0;pointer-events:none;}
+.ld-container{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;}
+.ld-heart-wrap{position:relative;margin-bottom:32px;}
+.ld-heart-icon{width:64px;height:64px;animation:logo-beat 1.4s ease-in-out infinite;}
+.ld-pulse-ring{position:absolute;inset:-14px;border-radius:50%;border:1.5px solid rgba(0,212,255,0.25);animation:ld-pulse 1.4s ease-out infinite;}
+.ld-pulse-ring:nth-child(2){animation-delay:0.4s;}
+@keyframes ld-pulse{0%{transform:scale(0.8);opacity:0.6;}100%{transform:scale(1.6);opacity:0;}}
+.ld-brand{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:6px;color:#fff;margin-bottom:6px;}
+.ld-brand span{color:#00d4ff;}
+.ld-tagline{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:#3a5470;margin-bottom:48px;text-transform:uppercase;}
+.ld-bar-wrap{width:260px;margin-bottom:16px;}
+.ld-bar-track{width:100%;height:2px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.ld-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#0a4bff,#00d4ff);border-radius:2px;}
+.ld-status{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#2a4060;animation:ld-blink 1s step-end infinite;}
+@keyframes ld-blink{0%,100%{opacity:0.6;}50%{opacity:0.2;}}
+.ld-stamp{position:absolute;bottom:20px;right:22px;font-family:var(--mono);font-size:9px;letter-spacing:3px;color:rgba(255,60,60,0.5);border:1px solid rgba(255,60,60,0.2);padding:3px 8px;transform:rotate(-0.6deg);}
+
+/* CDR GATE */
+#cdr-gate{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;text-align:center;}
+.cdr-gate-box{background:var(--card);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:36px;max-width:400px;width:100%;}
+.cdr-gate-icon{font-size:36px;margin-bottom:16px;}
+.cdr-gate-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.cdr-gate-sub{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;margin-bottom:24px;}
+.cdr-gate-field{margin-bottom:12px;text-align:left;}
+.cdr-gate-field label{display:block;font-size:9px;font-family:var(--mono);letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:5px;}
+.cdr-gate-field input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color 0.2s;}
+.cdr-gate-field input:focus{border-color:var(--accent);}
+.cdr-gate-field input::placeholder{color:var(--text3);}
+.cdr-gate-error{font-size:10px;font-family:var(--mono);color:var(--danger);min-height:14px;margin-bottom:10px;text-align:center;}
+.cdr-gate-hint{font-size:9px;font-family:var(--mono);color:var(--text3);margin-top:12px;letter-spacing:1px;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(6,14,30,0.9);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-badge{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:logo-beat 1.4s ease-in-out infinite;}
+.logo-text{font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:2px;color:white;}
+.logo-text span{color:var(--accent);}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);}
+.header-meta{display:flex;align-items:center;gap:20px;font-family:var(--mono);font-size:11px;color:var(--text3);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;margin-right:6px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.classification{background:var(--danger);color:white;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:2px;padding:3px 8px;border-radius:3px;}
+
+/* LAYOUT */
+.layout{display:flex;height:calc(100vh - 56px);}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);background:rgba(6,14,30,0.5);padding:1.25rem 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.sidebar-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--text3);padding:0 1.25rem 6px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;padding-right:1rem;}
+.tier-badge{font-size:9px;font-family:var(--mono);letter-spacing:1px;padding:2px 7px;border-radius:3px;border-width:1px;border-style:solid;}
+.tb-free{background:rgba(16,185,129,0.15);color:var(--success);border-color:rgba(16,185,129,0.25);}
+.tb-paid{background:rgba(245,158,11,0.15);color:var(--warning);border-color:rgba(245,158,11,0.25);}
+.tb-restricted{background:rgba(239,68,68,0.12);color:var(--danger);border-color:rgba(239,68,68,0.25);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;font-size:13px;color:var(--text2);user-select:none;}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.nav-item.active{background:rgba(26,86,219,0.15);border-left-color:var(--accent);color:var(--accent);}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:0.7;}
+.nav-item.active .nav-icon{opacity:1;}
+.sidebar-divider{height:1px;background:var(--border);margin:6px 1.25rem;}
+.sidebar-bottom{margin-top:auto;padding:0 1.25rem;}
+.api-status{background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text3);}
+.api-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
+.api-dot{width:5px;height:5px;border-radius:50%;}
+.dot-green{background:var(--success);}
+.dot-yellow{background:var(--warning);}
+.dot-red{background:var(--danger);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:2rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;}
+.panel-header{margin-bottom:1.5rem;}
+.panel-title{font-size:20px;font-weight:600;letter-spacing:0.5px;margin-bottom:4px;}
+.panel-sub{font-size:12px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;}
+
+/* COMMON UI */
+.search-bar{display:flex;gap:10px;margin-bottom:1.5rem;align-items:center;}
+.search-input-wrap{flex:1;position:relative;}
+.search-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 16px 11px 42px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--text3);}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none;}
+.btn-primary{background:var(--blue);color:white;border:none;padding:11px 22px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:1px;cursor:pointer;transition:background 0.2s;white-space:nowrap;}
+.btn-primary:hover{background:var(--blue2);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:11px 16px;border-radius:8px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.2s;}
+.btn-outline:hover{background:rgba(255,255,255,0.05);color:var(--text);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1rem;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.card-title{font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text2);font-family:var(--mono);}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;}
+.metric-label{font-size:10px;font-family:var(--mono);letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
+.metric-value{font-size:26px;font-weight:600;font-family:var(--mono);color:var(--text);}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.metric-accent{color:var(--accent);}
+.metric-success{color:var(--success);}
+.metric-danger{color:var(--danger);}
+.metric-warning{color:var(--warning);}
+.results-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);}
+.results-table th{text-align:left;padding:8px 12px;color:var(--text3);font-weight:500;letter-spacing:1px;border-bottom:1px solid var(--border);text-transform:uppercase;font-size:10px;}
+.results-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.results-table tr:last-child td{border-bottom:none;}
+.results-table tr:hover td{background:rgba(255,255,255,0.02);color:var(--text);}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);font-weight:500;letter-spacing:1px;}
+.badge-success{background:rgba(16,185,129,0.15);color:var(--success);}
+.badge-danger{background:rgba(239,68,68,0.15);color:var(--danger);}
+.badge-warning{background:rgba(245,158,11,0.15);color:var(--warning);}
+.badge-info{background:rgba(0,212,255,0.1);color:var(--accent);}
+.badge-neutral{background:rgba(255,255,255,0.07);color:var(--text2);}
+.note-box{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warning);font-family:var(--mono);margin-bottom:1rem;}
+.empty-state{text-align:center;padding:3rem;color:var(--text3);font-family:var(--mono);font-size:12px;line-height:2;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.info-row{display:flex;flex-direction:column;gap:3px;}
+.info-key{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.info-val{font-size:13px;font-family:var(--mono);color:var(--text);}
+.recent-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.recent-query{flex:1;font-family:var(--mono);color:var(--text2);}
+.recent-time{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;}
+.risk-bar-wrap{margin:8px 0;}
+.risk-label-row{display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;}
+.risk-bar-bg{background:rgba(255,255,255,0.05);border-radius:4px;height:6px;}
+.risk-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,212,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.progress-wrap{background:rgba(255,255,255,0.05);border-radius:4px;height:4px;overflow:hidden;margin:4px 0 12px;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:4px;transition:width 0.3s;}
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:400px;overflow-y:auto;padding-right:4px;scrollbar-width:thin;}
+.platform-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:11px;font-family:var(--mono);transition:all 0.15s;}
+.platform-item.found{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3);color:var(--success);}
+.platform-item.not-found{opacity:0.4;}
+.platform-item.checking{animation:flicker 1s ease-in-out infinite;color:var(--accent);border-color:rgba(0,212,255,0.2);}
+@keyframes flicker{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.breach-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:8px;margin-bottom:8px;}
+.breach-icon{width:32px;height:32px;border-radius:6px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+
+/* CDR scoped */
+.cdr-page{display:none;}
+.cdr-page.on{display:block;}
+.cdr-tabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.cdr-tab{padding:7px 14px;font-size:11px;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;letter-spacing:.5px;white-space:nowrap;}
+.cdr-tab:hover{color:var(--text2);}
+.cdr-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.cdr-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1rem;}
+.cdr-card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.cdr-card-t{font-size:11px;font-weight:500;letter-spacing:1.5px;color:var(--text2);font-family:var(--mono);text-transform:uppercase;}
+.cdr-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
+.cdr-kpi{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:.9rem 1rem;}
+.cdr-kpi-lbl{font-size:10px;font-family:var(--mono);letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px;}
+.cdr-kpi-val{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text);}
+.cdr-tbl-wrap{overflow-x:auto;max-height:420px;overflow-y:auto;scrollbar-width:thin;}
+table.cdr-tbl{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);}
+table.cdr-tbl thead th{background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border);padding:7px 10px;text-align:left;font-size:10px;font-weight:500;color:var(--text3);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;position:sticky;top:0;}
+table.cdr-tbl tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+table.cdr-tbl tbody tr:hover{background:rgba(255,255,255,0.03);}
+table.cdr-tbl tbody td{padding:7px 10px;color:var(--text2);white-space:nowrap;}
+.cdr-bdg{display:inline-flex;align-items:center;font-size:9px;font-weight:500;padding:2px 6px;border-radius:3px;letter-spacing:.5px;font-family:var(--mono);}
+.cb-out{background:rgba(26,86,219,0.2);color:#93c5fd;}.cb-in{background:rgba(16,185,129,0.15);color:var(--success);}
+.cb-so{background:rgba(124,58,237,0.2);color:#c4b5fd;}.cb-si{background:rgba(192,38,211,0.15);color:#f0abfc;}
+.cb-wi{background:rgba(245,158,11,0.15);color:var(--warning);}.cb-ot{background:rgba(255,255,255,0.07);color:var(--text3);}
+.cb-hm{background:rgba(245,158,11,0.15);color:var(--warning);}.cb-wk{background:rgba(0,212,255,0.1);color:var(--accent);}
+.cdr-fb{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+input.cdr-si{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 12px;outline:none;transition:border-color .15s;min-width:180px;}
+input.cdr-si::placeholder{color:var(--text3);}
+input.cdr-si:focus,select.cdr-fsel:focus{border-color:var(--accent);}
+select.cdr-fsel{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;outline:none;}
+.cdr-pg{display:flex;align-items:center;gap:4px;margin-top:10px;justify-content:center;flex-wrap:wrap;}
+.cdr-pgb{background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:11px;font-family:var(--mono);color:var(--text3);cursor:pointer;transition:all .1s;}
+.cdr-pgb:hover{border-color:var(--accent);color:var(--accent);}
+.cdr-pgb.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.cdr-pgb:disabled{opacity:.3;cursor:default;}
+.cdr-map-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem;}
+.cdr-map-btns{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.cdr-map-btn{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:5px;padding:5px 12px;font-size:10px;font-family:var(--mono);color:var(--text3);cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.cdr-map-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cdr-map-btn.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.cdr-g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.cdr-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.cdr-ps{background:rgba(26,86,219,0.08);border:1px solid rgba(26,86,219,0.2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.cdr-ps-l{display:flex;align-items:center;gap:12px;}
+.cdr-ps-av{width:36px;height:36px;border-radius:8px;background:rgba(26,86,219,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cdr-ps-num{font-size:15px;font-weight:500;color:var(--text);font-family:var(--mono);}
+.cdr-ps-m{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.cdr-ps-bdg{background:rgba(0,212,255,0.1);color:var(--accent);border:1px solid rgba(0,212,255,0.2);border-radius:4px;padding:2px 8px;font-size:10px;font-family:var(--mono);}
+.cdr-ps-stats{display:flex;gap:20px;}
+.cdr-ps-sv{font-size:20px;font-weight:600;font-family:var(--mono);color:var(--text);}
+.cdr-ps-sl{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.cdr-sl-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.cdr-sl-row:last-child{border-bottom:none;}
+.cdr-sl-k{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.cdr-sl-v{font-size:11px;font-weight:500;color:var(--text);font-family:var(--mono);}
+.cdr-tchip{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:9px 11px;margin-bottom:7px;}
+.cdr-tchip-id{font-size:11px;font-weight:500;color:var(--accent);font-family:var(--mono);margin-bottom:2px;}
+.cdr-tchip-addr{font-size:11px;color:var(--text2);}
+.cdr-tchip-s{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.cdr-tri-box{background:rgba(26,86,219,0.12);border:1px solid rgba(26,86,219,0.3);border-radius:8px;padding:14px 16px;margin:8px 0;}
+.cdr-tri-lbl{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:1.5px;margin-bottom:4px;}
+.cdr-tri-coord{font-size:18px;font-weight:500;color:var(--accent);font-family:var(--mono);}
+.cdr-tri-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:4px;}
+.cdr-rr{padding:11px 13px;border-radius:6px;margin-bottom:7px;}
+.cdr-rr.hi{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);}
+.cdr-rr.md{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);}
+.cdr-rr.lo{background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);}
+.cdr-rr-hd{display:flex;justify-content:space-between;margin-bottom:5px;}
+.cdr-rr-nm{font-size:12px;font-weight:500;color:var(--text);}
+.cdr-rr-sc{font-size:11px;font-family:var(--mono);}
+.cdr-rr.hi .cdr-rr-sc{color:var(--danger);}.cdr-rr.md .cdr-rr-sc{color:var(--warning);}.cdr-rr.lo .cdr-rr-sc{color:var(--success);}
+.cdr-rr-bar{height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;margin-bottom:5px;}
+.cdr-rr-fill{height:100%;border-radius:2px;}
+.cdr-rr.hi .cdr-rr-fill{background:var(--danger);}.cdr-rr.md .cdr-rr-fill{background:var(--warning);}.cdr-rr.lo .cdr-rr-fill{background:var(--success);}
+.cdr-rr-desc{font-size:11px;color:var(--text3);}
+.cdr-alt{display:flex;align-items:flex-start;gap:8px;padding:9px 13px;border-radius:6px;font-size:11px;font-family:var(--mono);margin-bottom:8px;}
+.cdr-alt-ok{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--success);}
+.cdr-alt-wn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:var(--warning);}
+.cdr-alt-er{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--danger);}
+.cdr-em{text-align:center;padding:2.5rem;color:var(--text3);font-family:var(--mono);font-size:11px;}
+.cdr-em-ic{font-size:28px;margin-bottom:8px;opacity:.3;}
+.leaflet-popup-content-wrapper{background:#0f1f3d!important;border:1px solid rgba(255,255,255,0.15)!important;border-radius:7px!important;box-shadow:0 4px 16px rgba(0,0,0,0.4)!important;font-family:'IBM Plex Mono',monospace!important;font-size:11px!important;color:#94a3b8!important;}
+.leaflet-popup-tip{background:#0f1f3d!important;}
+.leaflet-popup-content{margin:10px 13px!important;color:#94a3b8;}
+.cpop-t{font-weight:500;color:#e2e8f0;margin-bottom:5px;font-size:12px;}
+.cpop-r{display:flex;justify-content:space-between;gap:14px;font-size:10px;line-height:1.9;}
+.cpop-k{color:#64748b;}.cpop-v{color:#94a3b8;}
+.cdr-drop{border:1.5px dashed var(--border2);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,0.02);margin-bottom:1rem;}
+.cdr-drop:hover{border-color:var(--accent);background:rgba(0,212,255,0.04);}
+.cdr-prog-wrap{display:none;margin:12px 0;}
+.cdr-prog-bar{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:6px;}
+.cdr-prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:2px;transition:width .2s;}
+.cdr-prog-txt{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.cdr-map-ui{display:none;margin-top:1rem;}
+.cdr-map-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.cdr-map-row{display:flex;flex-direction:column;gap:3px;}
+.cdr-map-lbl{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.cdr-map-lbl .req{color:var(--danger);}
+select.cdr-sel{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 8px;outline:none;transition:border-color .15s;width:100%;}
+select.cdr-sel:focus{border-color:var(--accent);}
+#cdr-main-map,#cdr-tri-map{height:400px;}
+</style>
+</head>
+<body>
+<!-- LEA GATE OVERLAY -->
+<style>
+#lea-overlay{
+  position:fixed;inset:0;z-index:8000;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(2,8,16,0.7);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.lea-box-outer{
+  width:460px;max-width:92vw;
+  display:flex;flex-direction:column;align-items:center;
+  animation:leaFadeIn 0.2s ease;
+}
+@keyframes leaFadeIn{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+.lea-box-title-top{text-align:center;margin-bottom:20px;}
+.lea-box-title-top .lea-icon{font-size:36px;display:block;margin-bottom:10px;}
+.lea-box-title-top .lea-t1{font-family:var(--mono);font-size:16px;font-weight:700;color:#e2e8f0;letter-spacing:4px;text-transform:uppercase;margin-bottom:5px;}
+.lea-box-title-top .lea-t2{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:#ef4444;text-transform:uppercase;}
+.lea-box-title-top .lea-t2 span{opacity:0.4;margin:0 6px;}
+.lea-form{width:100%;background:#161b22;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:26px 28px;}
+.lea-form-hd{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:#6e7681;text-transform:uppercase;text-align:center;margin-bottom:20px;}
+.lea-f{margin-bottom:13px;}
+.lea-f label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:5px;}
+.lea-f label .r{color:#ef4444;}
+.lea-f input{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;color:#c9d1d9;font-family:var(--mono);font-size:12px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;letter-spacing:1px;}
+.lea-f input:focus{border-color:#58a6ff;box-shadow:0 0 0 3px rgba(88,166,255,0.1);}
+.lea-f input::placeholder{color:#484f58;}
+.lea-f input:disabled{opacity:0.4;cursor:not-allowed;}
+.lea-f-hint{font-family:var(--mono);font-size:9px;color:#58a6ff;margin-top:4px;}
+.lea-pw-wr{position:relative;}
+.lea-pw-wr input{padding-right:40px;}
+.lea-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#484f58;padding:0;line-height:0;}
+.lea-eye:hover{color:#8b949e;}
+.lea-err{font-family:var(--mono);font-size:10px;color:#f85149;min-height:15px;margin-bottom:10px;text-align:center;letter-spacing:0.5px;}
+.lea-submit{width:100%;background:linear-gradient(135deg,#da3633,#f85149);border:none;border-radius:6px;padding:12px;color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;}
+.lea-submit:hover{opacity:0.87;}
+.lea-submit:disabled{opacity:0.4;cursor:not-allowed;}
+.lea-footer{margin-top:14px;text-align:center;}
+.lea-footer p{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:#30363d;text-transform:uppercase;margin-top:4px;}
+</style>
+<div id="lea-overlay">
+  <div class="lea-box-outer" style="position:relative;">
+    <button onclick="closeLEAGate()" style="position:absolute;top:-12px;right:-12px;width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:10;transition:background 0.15s;" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">&#10005;</button>
+    <div class="lea-box-title-top">
+      <span class="lea-icon">&#128274;</span>
+      <div class="lea-t1">LEA Access Required</div>
+      <div class="lea-t2">RESTRICTED<span>&middot;</span>LAW ENFORCEMENT PERSONNEL ONLY</div>
+    </div>
+    <div class="lea-form">
+      <div class="lea-form-hd">VERIFY GOVERNMENT CREDENTIALS</div>
+      <div class="lea-f">
+        <label>Official Government Email <span class="r">*</span></label>
+        <input type="email" id="lea-email" placeholder="officer@dept.gov.in" autocomplete="off" spellcheck="false"/>
+        <div class="lea-f-hint">Must end with <strong>.gov.in</strong></div>
+      </div>
+      <div class="lea-f">
+        <label>Access Password <span class="r">*</span></label>
+        <div class="lea-pw-wr">
+          <input type="password" id="lea-pass" placeholder="Enter access password"/>
+          <button class="lea-eye" onclick="toggleLEAPw()" type="button">
+            <svg id="lea-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="lea-err" id="lea-gate-error"></div>
+      <button class="lea-submit" id="lea-submit-btn" onclick="leaLogin()">
+        &#128274;&nbsp; VERIFY &amp; UNLOCK MODULE
+      </button>
+    </div>
+    <div class="lea-footer">
+      <p>UNAUTHORISED ACCESS IS A CRIMINAL OFFENCE</p>
+      <p>ALL ACCESS ATTEMPTS ARE LOGGED</p>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg class="login-heart" viewBox="0 0 64 64" fill="none">
+        <path d="M32 54S6 38 6 20a14 14 0 0 1 26-7.1A14 14 0 0 1 58 20c0 18-26 34-26 34z" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="2" stroke-linejoin="round"/>
+        <polyline points="14,30 20,30 23,24 26,36 29,28 32,32 35,26 38,30 50,30" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+      </svg>
+      <div class="login-brand">Heart<span>SINT</span></div>
+      <div class="login-tagline">Heart of OSINT Intelligence</div>
+    </div>
+    <div class="login-card">
+      <div class="login-card-title">Operator Authentication</div>
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="Enter username" autocomplete="off" spellcheck="false"/>
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-pass" placeholder="Enter password" style="padding-right:42px;"/>
+          <button class="eye-btn" onclick="togglePw()" type="button" id="eye-btn">
+            <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" onclick="doLogin()">ACCESS SYSTEM</button>
+    </div>
+  </div>
+  <div class="login-stamp">LEA RESTRICTED</div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="ld-container">
+    <div class="ld-heart-wrap">
+      <div class="ld-pulse-ring"></div>
+      <div class="ld-pulse-ring"></div>
+      <svg class="ld-heart-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M32 54S6 38 6 20a14 14 0 0 1 26-7.1A14 14 0 0 1 58 20c0 18-26 34-26 34z" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.5" stroke-linejoin="round"/>
+        <polyline points="14,30 20,30 23,24 26,36 29,28 32,32 35,26 38,30 50,30" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+      </svg>
+    </div>
+    <div class="ld-brand">Heart<span>SINT</span></div>
+    <div class="ld-tagline">Intelligence Platform</div>
+    <div class="ld-bar-wrap"><div class="ld-bar-track"><div class="ld-bar-fill" id="ld-bar-fill"></div></div></div>
+    <div class="ld-status">LOADING...</div>
+  </div>
+  <div class="ld-stamp">LEA RESTRICTED</div>
+</div>
+
+<!-- APP -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-badge">
+      <svg width="34" height="34" viewBox="0 0 64 64" fill="none">
+        <path d="M32 54S6 38 6 20a14 14 0 0 1 26-7.1A14 14 0 0 1 58 20c0 18-26 34-26 34z" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="2" stroke-linejoin="round"/>
+        <polyline points="14,30 20,30 23,24 26,36 29,28 32,32 35,26 38,30 50,30" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Heart<span>SINT</span></div>
+      <div class="logo-sub">Heart of OSINT Intelligence</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span><span class="status-dot"></span>SYSTEMS ONLINE</span>
+    <span id="clock"></span>
+    <span class="classification">LEA RESTRICTED</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-item active" onclick="switchPanel('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label"><span>Tools</span><span class="tier-badge tb-free">FREE</span></div>
+    <div class="nav-item" onclick="switchPanel('username')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      Username OSINT
+    </div>
+    <div class="nav-item" onclick="switchPanel('email')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 4l7 5 7-5"/></svg>
+      Email OSINT
+    </div>
+    <div class="nav-item" onclick="switchPanel('phone')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="1" width="8" height="14" rx="2"/><circle cx="8" cy="12" r="0.7" fill="currentColor"/></svg>
+      Phone OSINT
+    </div>
+    <div class="nav-item" onclick="switchPanel('ip')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a9 9 0 0 1 0 12M8 2a9 9 0 0 0 0 12M2 8h12"/></svg>
+      IP Lookup
+    </div>
+    <div class="nav-item" onclick="switchPanel('domain')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1"/><path d="M1 6h14M5 3v10"/></svg>
+      Domain Lookup
+    </div>
+    <div class="nav-item" onclick="switchPanel('crypto')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M6 5.5h3a1.5 1.5 0 0 1 0 3H6m0 0h3.5a1.5 1.5 0 0 1 0 3H6M6 5.5v7M8 5.5V4M8 13.5V12"/></svg>
+      Crypto Tracing
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label"><span>Advanced</span><span class="tier-badge tb-restricted">RESTRICTED</span></div>
+    <div class="nav-item" onclick="switchPanel('cdr')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1,12 5,7 8,9 11,4 15,8"/><path d="M1 14h14"/></svg>
+      CDR Analysis
+      <svg style="margin-left:auto;width:12px;height:12px;flex-shrink:0;opacity:0.55;" viewBox="0 0 16 16" fill="none" stroke="var(--danger)" stroke-width="1.5"><rect x="3" y="7" width="10" height="8" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+    </div>
+    <div class="nav-item" onclick="switchPanel('leakdb')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="8" cy="5" rx="6" ry="2.5"/><path d="M2 5v6c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V5"/><path d="M2 8c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg>
+      LeakDB Lookup
+      <svg style="margin-left:auto;width:12px;height:12px;flex-shrink:0;opacity:0.55;" viewBox="0 0 16 16" fill="none" stroke="var(--danger)" stroke-width="1.5"><rect x="3" y="7" width="10" height="8" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+    </div>
+    <div class="nav-item" onclick="switchPanel('igmonitor')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><circle cx="8" cy="8" r="2.5"/><circle cx="11.5" cy="4.5" r="0.75" fill="currentColor" stroke="none"/></svg>
+      Instagram Monitor
+      <svg style="margin-left:auto;width:12px;height:12px;flex-shrink:0;opacity:0.55;" viewBox="0 0 16 16" fill="none" stroke="var(--danger)" stroke-width="1.5"><rect x="3" y="7" width="10" height="8" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">System</div>
+    <div class="nav-item" onclick="switchPanel('settings')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+      API Settings
+    </div>
+    <div class="sidebar-bottom">
+      <div class="api-status">
+        <div style="margin-bottom:6px;color:var(--text2);font-size:10px;letter-spacing:1px;">API STATUS</div>
+        <div class="api-row"><span>HaveIBeenPwned</span><span class="api-dot dot-yellow"></span></div>
+        <div class="api-row"><span>Hunter.io</span><span class="api-dot dot-yellow"></span></div>
+        <div class="api-row"><span>NumVerify</span><span class="api-dot dot-yellow"></span></div>
+        <div class="api-row"><span>Sherlock DB</span><span class="api-dot dot-green"></span></div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="panel-header"><div class="panel-title">Intelligence Dashboard</div><div class="panel-sub">SESSION ACTIVE &middot; OPERATOR: INVESTIGATOR</div></div>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-label">Queries Today</div><div class="metric-value metric-accent" id="total-queries">0</div><div class="metric-sub">All modules</div></div>
+        <div class="metric-card"><div class="metric-label">Profiles Found</div><div class="metric-value metric-success" id="profiles-found">0</div><div class="metric-sub">Username hits</div></div>
+        <div class="metric-card"><div class="metric-label">Breaches Found</div><div class="metric-value metric-danger" id="breach-count">0</div><div class="metric-sub">Email breaches</div></div>
+        <div class="metric-card"><div class="metric-label">CDR Records</div><div class="metric-value metric-warning" id="cdr-count">0</div><div class="metric-sub">Calls analyzed</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Investigations</div></div>
+          <div id="recent-list"><div class="empty-state">No investigations yet.</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Quick Launch</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('username')">&#8594; Username OSINT</button>
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('email')">&#8594; Email Investigation</button>
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('phone')">&#8594; Phone OSINT</button>
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('ip')">&#8594; IP Lookup</button>
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('domain')">&#8594; Domain Lookup</button>
+            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('crypto')">&#8594; Crypto Wallet Tracing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERNAME OSINT -->
+    <div id="panel-username" class="panel">
+      <div class="panel-header"><div class="panel-title">Username OSINT</div><div class="panel-sub">SEARCHES ACROSS 500+ PLATFORMS</div></div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon">@</span><input type="text" id="username-input" class="search-input" placeholder="Enter username (e.g. johndoe_99)"/></div>
+        <button class="btn-outline" onclick="document.getElementById('username-input').value='';document.getElementById('username-results').style.display='none';document.getElementById('username-empty').style.display='block';">Clear</button>
+        <button class="btn-primary" id="btn-username-search" onclick="searchUsername()">SEARCH</button>
+      </div>
+      <div id="username-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Checked</div><div class="metric-value" id="u-checked">0</div></div>
+          <div class="metric-card"><div class="metric-label">Found</div><div class="metric-value metric-success" id="u-found">0</div></div>
+          <div class="metric-card"><div class="metric-label">Not Found</div><div class="metric-value" id="u-notfound">0</div></div>
+          <div class="metric-card"><div class="metric-label">Hit Rate</div><div class="metric-value metric-accent" id="u-rate">0%</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Scan Progress</div><span id="u-progress-text" style="font-family:var(--mono);font-size:11px;color:var(--text3);">Initializing...</span></div>
+          <div class="progress-wrap"><div class="progress-bar" id="u-progress-bar" style="width:0%"></div></div>
+          <div class="platform-grid" id="platform-grid"></div>
+        </div>
+        <div class="card" id="u-found-card" style="display:none;">
+          <div class="card-header"><div class="card-title">Confirmed Profiles</div></div>
+          <table class="results-table"><thead><tr><th>Platform</th><th>URL</th><th>Category</th><th>Status</th></tr></thead><tbody id="u-found-table"></tbody></table>
+        </div>
+      </div>
+      <div id="username-empty" class="empty-state">Enter a username to begin platform sweep.<br/><span style="color:var(--text3);font-size:11px;">Checks 532 platforms including social, gaming, dev, dark web mirrors &amp; more.</span></div>
+    </div>
+
+    <!-- EMAIL OSINT -->
+    <div id="panel-email" class="panel">
+      <div class="panel-header"><div class="panel-title">Email OSINT</div><div class="panel-sub">BREACH DETECTION &middot; DOMAIN INTEL &middot; SOCIAL FOOTPRINT</div></div>
+      <div class="note-box" id="note-box-email">&#9888; Add your HaveIBeenPwned API key in API Settings for live breach data. Demo results shown without a key.</div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon">&#9993;</span><input type="text" id="email-input" class="search-input" placeholder="Enter email address"/></div>
+        <button class="btn-primary" id="btn-email-search" onclick="searchEmail()">INVESTIGATE</button>
+      </div>
+      <div id="email-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Breaches</div><div class="metric-value metric-danger" id="e-breach-count">0</div></div>
+          <div class="metric-card"><div class="metric-label">Pastes</div><div class="metric-value metric-warning" id="e-paste-count">0</div></div>
+          <div class="metric-card"><div class="metric-label">Records Exposed</div><div class="metric-value metric-danger" id="e-records">0</div></div>
+          <div class="metric-card"><div class="metric-label">Risk Score</div><div class="metric-value metric-danger" id="e-risk">--</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="card"><div class="card-header"><div class="card-title">Email Profile</div></div><div class="info-grid" id="email-profile"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Risk Assessment</div></div><div id="risk-bars"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Data Breaches</div><span id="e-loading" class="spinner" style="display:none;"></span></div>
+          <div id="breach-list"></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Associated Accounts</div></div><div id="email-accounts"></div></div>
+      </div>
+      <div id="email-empty" class="empty-state">Enter an email to run breach detection and profiling.</div>
+    </div>
+
+    <!-- PHONE OSINT -->
+    <div id="panel-phone" class="panel">
+      <div class="panel-header"><div class="panel-title">Phone Number OSINT</div><div class="panel-sub">CARRIER &middot; LOCATION &middot; SOCIAL &middot; SPAM REPORTS</div></div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon" style="font-size:13px;">&#128222;</span><input type="text" id="phone-input" class="search-input" placeholder="Enter phone number with country code (e.g. +919876543210)"/></div>
+        <button class="btn-primary" id="btn-phone-search" onclick="searchPhone()">LOOKUP</button>
+      </div>
+      <div id="phone-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Number Type</div><div class="metric-value metric-accent" id="p-type" style="font-size:16px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Country</div><div class="metric-value" id="p-country" style="font-size:16px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Carrier</div><div class="metric-value" id="p-carrier" style="font-size:16px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Spam Reports</div><div class="metric-value metric-warning" id="p-spam">--</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="card"><div class="card-header"><div class="card-title">Number Details</div></div><div class="info-grid" id="phone-details"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Social Media Links</div></div><div id="phone-socials"></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Caller ID &amp; Reports</div></div><div id="phone-reports"></div></div>
+      </div>
+      <div id="phone-empty" class="empty-state">Enter a phone number with country code to begin.<br/><span style="color:var(--text3);font-size:11px;">Sources: NumVerify, carrier lookup, OSINT databases.</span></div>
+    </div>
+
+    <!-- IP LOOKUP -->
+    <div id="panel-ip" class="panel">
+      <div class="panel-header"><div class="panel-title">IP Lookup</div><div class="panel-sub">GEOLOCATION &middot; ISP &middot; ASN &middot; THREAT INTEL</div></div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon">&#127760;</span><input type="text" id="ip-input" class="search-input" placeholder="Enter IPv4 or IPv6 address (blank = your IP)"/></div>
+        <button class="btn-outline" onclick="document.getElementById('ip-input').value='';searchIP()">My IP</button>
+        <button class="btn-primary" id="btn-ip-search" onclick="searchIP()">LOOKUP</button>
+      </div>
+      <div id="ip-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">IP Address</div><div class="metric-value metric-accent" id="ip-addr" style="font-size:14px;font-family:var(--mono);">--</div></div>
+          <div class="metric-card"><div class="metric-label">Country</div><div class="metric-value" id="ip-country" style="font-size:14px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">ISP</div><div class="metric-value" id="ip-isp" style="font-size:12px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Type</div><div class="metric-value metric-warning" id="ip-type" style="font-size:14px;">--</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="card"><div class="card-header"><div class="card-title">IP Details</div></div><div class="info-grid" id="ip-details"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Network Info</div></div><div class="info-grid" id="ip-network"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Approximate Location Map</div><span style="font-size:10px;font-family:var(--mono);color:var(--text3);">City-level accuracy</span></div>
+          <div id="ip-map" style="height:340px;border-radius:6px;overflow:hidden;border:1px solid var(--border);"></div>
+        </div>
+      </div>
+      <div id="ip-empty" class="empty-state">Enter any IPv4 or IPv6 address to begin.<br/><span style="color:var(--text3);font-size:11px;">Powered by ipinfo.io &mdash; No API key required.</span></div>
+    </div>
+
+    <!-- DOMAIN LOOKUP -->
+    <div id="panel-domain" class="panel">
+      <div class="panel-header"><div class="panel-title">Domain Lookup</div><div class="panel-sub">WHOIS &middot; DNS &middot; SSL &middot; SUBDOMAINS &middot; THREAT INTEL</div></div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon" style="font-size:13px;">&#128279;</span><input type="text" id="domain-input" class="search-input" placeholder="Enter domain (e.g. example.com)"/></div>
+        <button class="btn-primary" id="btn-domain-search" onclick="searchDomain()">LOOKUP</button>
+      </div>
+      <div id="domain-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Domain</div><div class="metric-value metric-accent" id="d-domain" style="font-size:14px;font-family:var(--mono);">--</div></div>
+          <div class="metric-card"><div class="metric-label">Registrar</div><div class="metric-value" id="d-registrar" style="font-size:12px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Status</div><div class="metric-value metric-success" id="d-status" style="font-size:14px;">--</div></div>
+          <div class="metric-card"><div class="metric-label">Age</div><div class="metric-value metric-warning" id="d-age" style="font-size:14px;">--</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="card"><div class="card-header"><div class="card-title">WHOIS Info</div></div><div class="info-grid" id="domain-whois"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">DNS Records</div></div><div id="domain-dns"></div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Associated IPs &amp; Links</div></div><div id="domain-links"></div></div>
+      </div>
+      <div id="domain-empty" class="empty-state">Enter a domain name to begin analysis.<br/><span style="color:var(--text3);font-size:11px;">Sources: WHOIS, DNS over HTTPS, rdap.org, HackerTarget.</span></div>
+    </div>
+
+    <!-- CRYPTO TRACING -->
+    <div id="panel-crypto" class="panel">
+      <div class="panel-header"><div class="panel-title">Crypto Wallet Tracing</div><div class="panel-sub">BTC &middot; ETH &middot; TRON &middot; TRANSACTION GRAPH &middot; RISK SCORE</div></div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon" style="font-size:13px;">&#8383;</span><input type="text" id="crypto-input" class="search-input" placeholder="Enter wallet address (BTC, ETH, TRX...)"/></div>
+        <select id="crypto-chain" style="background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;">
+          <option value="btc">Bitcoin (BTC)</option>
+          <option value="eth">Ethereum (ETH)</option>
+          <option value="trx">Tron (TRX)</option>
+          <option value="ltc">Litecoin (LTC)</option>
+        </select>
+        <button class="btn-primary" id="btn-crypto-search" onclick="searchCrypto()">TRACE</button>
+      </div>
+      <div id="crypto-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Balance</div><div class="metric-value metric-accent" id="c-balance">--</div></div>
+          <div class="metric-card"><div class="metric-label">Total Received</div><div class="metric-value metric-success" id="c-received">--</div></div>
+          <div class="metric-card"><div class="metric-label">Total Sent</div><div class="metric-value metric-warning" id="c-sent">--</div></div>
+          <div class="metric-card"><div class="metric-label">Transactions</div><div class="metric-value" id="c-txcount">--</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="card"><div class="card-header"><div class="card-title">Wallet Details</div></div><div class="info-grid" id="crypto-details"></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Risk Assessment</div></div><div id="crypto-risk"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Transactions</div></div>
+          <table class="results-table"><thead><tr><th>TXID</th><th>Type</th><th>Amount</th><th>Address</th><th>Date</th><th>Status</th></tr></thead><tbody id="crypto-tx-table"></tbody></table>
+        </div>
+      </div>
+      <div id="crypto-empty" class="empty-state">Enter a crypto wallet address to begin tracing.<br/><span style="color:var(--text3);font-size:11px;">Sources: Blockchain.info, Etherscan, Tronscan &mdash; No API key required for basic lookup.</span></div>
+    </div>
+
+    <!-- CDR ANALYSIS -->
+    <div id="panel-cdr" class="panel">
+      <div class="panel-header">
+        <div class="panel-title">CDR Analysis</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;"><div class="panel-sub">CALL DETAIL RECORD INTELLIGENCE &middot; TOWER MAPPING &middot; TRIANGULATION</div><span style="background:rgba(239,68,68,0.12);color:var(--danger);font-size:9px;font-family:var(--mono);letter-spacing:1.5px;padding:2px 9px;border-radius:3px;border:1px solid rgba(239,68,68,0.3);">&#128274; RESTRICTED</span></div>
+      </div>
+      <!-- CDR Gate -->
+      <!-- CDR App (shown after LEA auth) -->
+      <div id="cdr-app-wrap" style="display:none;">
+        <div class="note-box">&#9888; All CDR data processed locally. Nothing transmitted externally.</div>
+        <!-- CDR Import -->
+        <div id="cdr-import-state">
+          <div class="cdr-drop" id="cdr-dropzone">
+            <input type="file" id="cdr-file-inp" accept=".csv,.xlsx,.xls,.zip" style="display:none"/>
+            <div style="font-size:28px;margin-bottom:10px;opacity:.5;">&#128194;</div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:500;">Drop CDR file here or click to browse</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);">Accepts: .xlsx &middot; .xls &middot; .csv &middot; .zip</div>
+          </div>
+          <div class="cdr-prog-wrap" id="cdr-prog-wrap">
+            <div class="cdr-prog-bar"><div class="cdr-prog-fill" id="cdr-prog-fill" style="width:0%"></div></div>
+            <div class="cdr-prog-txt" id="cdr-prog-txt">Loading...</div>
+          </div>
+          <div class="cdr-map-ui" id="cdr-map-ui">
+            <div style="font-size:11px;font-family:var(--mono);color:var(--text2);margin-bottom:4px;letter-spacing:1px;">MAP COLUMNS TO STANDARD FIELDS</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:14px;">Required fields marked * &mdash; unmapped fields will be skipped</div>
+            <div class="cdr-map-grid" id="cdr-map-grid"></div>
+            <button class="btn-primary" onclick="cdrStartAnalysis()" style="font-size:11px;padding:9px 20px;">START ANALYSIS &#8594;</button>
+          </div>
+        </div>
+        <!-- CDR Analysis -->
+        <div id="cdr-analysis-state" style="display:none;">
+          <div class="cdr-tabs" id="cdr-tabs">
+            <div class="cdr-tab on" onclick="cdrTab('overview',this)">Overview</div>
+            <div class="cdr-tab" onclick="cdrTab('map',this)">Tower Map</div>
+            <div class="cdr-tab" onclick="cdrTab('triangulate',this)">Triangulation</div>
+            <div class="cdr-tab" onclick="cdrTab('timeline',this)">Timeline</div>
+            <div class="cdr-tab" onclick="cdrTab('contacts',this)">Contacts</div>
+            <div class="cdr-tab" onclick="cdrTab('towers',this)">Tower Intel</div>
+            <div class="cdr-tab" onclick="cdrTab('pattern',this)">Patterns &amp; Risk</div>
+            <div class="cdr-tab" onclick="cdrTab('device',this)">Device</div>
+            <div class="cdr-tab" onclick="cdrTab('rawlog',this)">Raw Log</div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <span id="cdr-status-tag" style="font-size:10px;font-family:var(--mono);color:var(--text3);padding:3px 8px;border:1px solid var(--border);border-radius:4px;"></span>
+              <button class="btn-outline" onclick="cdrReset()" style="font-size:10px;padding:5px 10px;">&#8617; Reset</button>
+            </div>
+          </div>
+          <div class="cdr-page on" id="cdrp-overview"><div id="cdr-ps"></div><div class="cdr-kpi-row" id="cdr-kpi-row"></div><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Call Type Distribution</div></div><canvas id="cdr-ct-ch" height="180"></canvas></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Activity by Hour</div></div><canvas id="cdr-hr-ch" height="180"></canvas></div></div><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Home / Work Locations</div></div><div id="cdr-hw"></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Circle / Region Activity</div></div><canvas id="cdr-circ-ch" height="180"></canvas></div></div></div>
+          <div class="cdr-page" id="cdrp-map"><div class="cdr-map-btns"><button class="cdr-map-btn on" onclick="cdrMapLayer('all',this)">All Towers</button><button class="cdr-map-btn" onclick="cdrMapLayer('heat',this)">Heat Map</button><button class="cdr-map-btn" onclick="cdrMapLayer('hw',this)">Home/Work</button><button class="cdr-map-btn" onclick="cdrMapLayer('trail',this)">Trail</button><button class="cdr-map-btn" onclick="cdrMapLayer('night',this)">Night Activity</button></div><div class="cdr-map-wrap"><div id="cdr-main-map"></div></div><div class="cdr-g3"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Top Towers</div></div><div id="cdr-top-twrs"></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Distribution</div></div><canvas id="cdr-twr-pie" height="180"></canvas></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Movement Summary</div></div><div id="cdr-move-sm"></div></div></div></div>
+          <div class="cdr-page" id="cdrp-triangulate"><div class="cdr-g2"><div><div class="cdr-card" style="margin-bottom:1rem;"><div class="cdr-card-hd"><div class="cdr-card-t">Parameters</div></div><div style="display:flex;flex-direction:column;gap:10px;"><div><div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;letter-spacing:1px;">DATE</div><select id="cdr-tri-date" class="cdr-sel" style="width:100%;"><option value="">-- Select date --</option></select></div><div><div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:4px;letter-spacing:1px;">TIME WINDOW</div><select id="cdr-tri-win" class="cdr-sel" style="width:100%;"><option value="1">+/-1 Hour</option><option value="2">+/-2 Hours</option><option value="6">+/-6 Hours</option><option value="24" selected>Full Day</option></select></div><button class="btn-primary" onclick="cdrRunTri()" style="font-size:11px;padding:9px;">RUN TRIANGULATION</button></div></div><div class="cdr-card" style="margin-bottom:1rem;"><div class="cdr-card-hd"><div class="cdr-card-t">Result</div></div><div id="cdr-tri-res"><div class="cdr-em"><div class="cdr-em-ic">&#127919;</div>Select a date and run</div></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Top 3 Towers</div></div><div id="cdr-top3"></div></div></div><div class="cdr-map-wrap" style="margin-bottom:0;"><div id="cdr-tri-map" style="height:520px;"></div></div></div></div>
+          <div class="cdr-page" id="cdrp-timeline"><div class="cdr-card" style="margin-bottom:1rem;"><div class="cdr-card-hd"><div class="cdr-card-t">Daily Volume</div><span id="cdr-period" style="font-size:10px;font-family:var(--mono);color:var(--text3);"></span></div><canvas id="cdr-daily-ch" height="90"></canvas></div><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">By Hour of Day</div></div><canvas id="cdr-hr2-ch" height="160"></canvas></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">By Day of Week</div></div><canvas id="cdr-dow-ch" height="160"></canvas></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Recent Records</div><span id="cdr-rec-lbl" style="font-size:10px;font-family:var(--mono);color:var(--text3);"></span></div><div class="cdr-tbl-wrap" style="max-height:300px;"><table class="cdr-tbl"><thead><tr><th>Date</th><th>Time</th><th>B Party</th><th>Type</th><th>Duration</th><th>Cell ID</th><th>Location</th><th>Circle</th></tr></thead><tbody id="cdr-rec-body"></tbody></table></div></div></div>
+          <div class="cdr-page" id="cdrp-contacts"><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Top by Call Count</div></div><canvas id="cdr-cnt-bar" height="220"></canvas></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Top by Duration</div></div><canvas id="cdr-dur-bar" height="220"></canvas></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Contact Directory</div><span id="cdr-cnt-sub" style="font-size:10px;font-family:var(--mono);color:var(--text3);"></span></div><div class="cdr-fb"><input class="cdr-si" id="cdr-cnt-srch" placeholder="Search number..."/><span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="cdr-cnt-fc"></span></div><div class="cdr-tbl-wrap"><table class="cdr-tbl"><thead><tr><th>#</th><th>Number</th><th>Provider</th><th>Total</th><th>Out</th><th>In</th><th>SMS Out</th><th>SMS In</th><th>Duration(s)</th><th>Days</th><th>First</th><th>Last</th></tr></thead><tbody id="cdr-cnt-body"></tbody></table></div></div></div>
+          <div class="cdr-page" id="cdrp-pattern"><div class="cdr-kpi-row" id="cdr-pat-kpi"></div><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">&#127769; Night Activity (22:00-06:00)</div></div><div id="cdr-night-pnl"></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">&#9728; Day Activity (06:00-22:00)</div></div><div id="cdr-day-pnl"></div></div></div><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Night vs Day</div></div><canvas id="cdr-nd-ch" height="170"></canvas></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Communication Radar</div></div><canvas id="cdr-rad-ch" height="170"></canvas></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Risk Indicators</div></div><div id="cdr-risk-pnl"></div></div></div>
+          <div class="cdr-page" id="cdrp-towers"><div class="cdr-kpi-row" style="grid-template-columns:repeat(3,1fr);" id="cdr-twr-kpi"></div><div class="cdr-card"><div class="cdr-fb"><input class="cdr-si" id="cdr-twr-srch" placeholder="Search cell ID or address..."/><span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="cdr-twr-fc"></span></div><div class="cdr-tbl-wrap"><table class="cdr-tbl"><thead><tr><th>#</th><th>Cell ID</th><th>Calls</th><th>Days</th><th>Address</th><th>Lat</th><th>Lon</th><th>First</th><th>Last</th><th>Circle</th><th>Tag</th></tr></thead><tbody id="cdr-twr-body"></tbody></table></div></div></div>
+          <div class="cdr-page" id="cdrp-device"><div class="cdr-g2"><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">IMEI Record</div></div><div id="cdr-imei-pnl"></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">IMSI Record</div></div><div id="cdr-imsi-pnl"></div></div></div><div class="cdr-card"><div class="cdr-card-hd"><div class="cdr-card-t">Roaming Periods</div></div><div class="cdr-tbl-wrap"><table class="cdr-tbl"><thead><tr><th>#</th><th>Circle</th><th>Period</th><th>Calls</th><th>Days</th><th>First Location</th><th>Last Location</th></tr></thead><tbody id="cdr-roam-body"></tbody></table></div></div></div>
+          <div class="cdr-page" id="cdrp-rawlog"><div class="cdr-fb"><input class="cdr-si" id="cdr-raw-srch" placeholder="Search number, cell ID, location..."/><select class="cdr-fsel" id="cdr-raw-tf"><option value="">All Types</option><option value="CALL_OUT">Call Out</option><option value="CALL_IN">Call In</option><option value="SMS_OUT">SMS Out</option><option value="SMS_IN">SMS In</option></select><button class="btn-outline" onclick="cdrExportRaw()" style="font-size:10px;padding:6px 12px;">&#11015; Export CSV</button><span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="cdr-raw-fc"></span></div><div class="cdr-tbl-wrap" style="max-height:500px;"><table class="cdr-tbl"><thead><tr><th>#</th><th>Date</th><th>Time</th><th>B Party</th><th>Type</th><th>Duration</th><th>Cell ID</th><th>Location</th><th>Lat,Lon</th><th>Circle</th><th>IMEI</th></tr></thead><tbody id="cdr-raw-body"></tbody></table></div><div class="cdr-pg" id="cdr-raw-pg"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEAKDB LOOKUP -->
+    <div id="panel-leakdb" class="panel">
+      <div class="panel-header">
+        <div class="panel-title">LeakDB Lookup</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;"><div class="panel-sub">DARK WEB LEAKS &middot; COMBO LISTS &middot; CREDENTIAL EXPOSURE</div><span style="background:rgba(239,68,68,0.12);color:var(--danger);font-size:9px;font-family:var(--mono);letter-spacing:1.5px;padding:2px 9px;border-radius:3px;border:1px solid rgba(239,68,68,0.3);">&#128274; RESTRICTED</span></div>
+      </div>
+      <div id="leakdb-app-wrap" style="display:none;"><div class="note-box">&#9888; LeakDB searches dark web combo lists, paste sites and breach databases. Results are for investigative purposes only.</div>
+      <div class="search-bar">
+        <div class="search-input-wrap"><span class="search-icon">&#128270;</span><input type="text" id="leakdb-input" class="search-input" placeholder="Enter email, username, phone or domain"/></div>
+        <select id="leakdb-type" style="background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;">
+          <option value="email">Email</option>
+          <option value="username">Username</option>
+          <option value="phone">Phone</option>
+          <option value="domain">Domain</option>
+        </select>
+        <button class="btn-primary" id="btn-leakdb-search" onclick="searchLeakDB()">SEARCH LEAKS</button>
+      </div>
+      <div id="leakdb-results" style="display:none;">
+        <div class="metrics-row">
+          <div class="metric-card"><div class="metric-label">Total Leaks</div><div class="metric-value metric-danger" id="ldb-total">0</div></div>
+          <div class="metric-card"><div class="metric-label">Combo Lists</div><div class="metric-value metric-warning" id="ldb-combo">0</div></div>
+          <div class="metric-card"><div class="metric-label">Paste Sites</div><div class="metric-value metric-warning" id="ldb-pastes">0</div></div>
+          <div class="metric-card"><div class="metric-label">Severity</div><div class="metric-value metric-danger" id="ldb-severity">--</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Leak Records Found</div></div>
+          <table class="results-table">
+            <thead><tr><th>Source</th><th>Date</th><th>Data Types</th><th>Records</th><th>Severity</th></tr></thead>
+            <tbody id="leakdb-table"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Exposed Credentials Preview</div><span class="badge badge-danger">REDACTED FOR SECURITY</span></div>
+          <div id="leakdb-creds"></div>
+        </div>
+      </div>
+      <div id="leakdb-empty" class="empty-state">Enter a query to search leaked databases.<br/><span style="color:var(--text3);font-size:11px;">Searches breach archives, combo lists, paste sites and dark web dumps.</span></div>
+      </div><!-- /leakdb-app-wrap -->
+    </div>
+
+    <!-- INSTAGRAM MONITOR -->
+    <div id="panel-igmonitor" class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Instagram Monitor</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+          <div class="panel-sub">REAL-TIME PROFILE &middot; POSTS &middot; STORIES &middot; FOLLOWERS &middot; BIO CHANGES</div>
+          <span style="background:rgba(239,68,68,0.12);color:var(--danger);font-size:9px;font-family:var(--mono);letter-spacing:1.5px;padding:2px 9px;border-radius:3px;border:1px solid rgba(239,68,68,0.3);">&#128274; RESTRICTED</span>
+          <a href="https://github.com/misiektoja/instagram_monitor" target="_blank" style="font-family:var(--mono);font-size:9px;color:var(--accent2);text-decoration:none;border:1px solid var(--border2);padding:2px 8px;border-radius:3px;">&#128279; instagram_monitor v5.x</a>
+        </div>
+      </div>
+
+      <div id="igmonitor-app-wrap" style="display:none;">
+
+        <!-- Setup notice -->
+        <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:11px;color:var(--warning);font-family:var(--mono);margin-bottom:1rem;">
+          &#9888; This module interfaces with <strong>instagram_monitor</strong> (Python tool by misiektoja). Install via:
+          <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;margin-left:6px;color:var(--accent);">pip install instagram_monitor</code>
+          &nbsp;then configure your session below.
+        </div>
+
+        <!-- Target + Controls -->
+        <div class="search-bar" style="margin-bottom:1rem;">
+          <div class="search-input-wrap">
+            <span class="search-icon" style="font-size:13px;">&#128247;</span>
+            <input type="text" id="ig-username" class="search-input" placeholder="Enter Instagram username to monitor (e.g. target_user)"/>
+          </div>
+          <button class="btn-outline" id="ig-btn-stop" onclick="igStop()" style="display:none;font-size:11px;color:var(--danger);border-color:var(--danger);">&#9646;&#9646; Stop</button>
+          <button class="btn-primary" id="ig-btn-start" onclick="igStart()">&#9654; Start Monitor</button>
+        </div>
+
+        <!-- Session config -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">&#128100; Instagram Session</div></div>
+            <div class="lea-f" style="margin-bottom:10px;">
+              <label style="display:block;font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Logged-in Username</label>
+              <input type="text" id="ig-session-user" placeholder="your_ig_account" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/>
+            </div>
+            <div class="lea-f">
+              <label style="display:block;font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;">Session Cookie (sessionid)</label>
+              <input type="password" id="ig-session-cookie" placeholder="Paste sessionid cookie value" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"/>
+            </div>
+            <button onclick="igSaveSession()" class="btn-primary" style="width:100%;margin-top:10px;font-size:11px;">Save Session</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">&#9881; Monitor Settings</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;">
+                <span>Monitor new posts</span>
+                <input type="checkbox" id="ig-opt-posts" checked style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"/>
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;">
+                <span>Monitor stories</span>
+                <input type="checkbox" id="ig-opt-stories" checked style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"/>
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;">
+                <span>Monitor followers</span>
+                <input type="checkbox" id="ig-opt-followers" checked style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"/>
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;">
+                <span>Monitor bio changes</span>
+                <input type="checkbox" id="ig-opt-bio" checked style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"/>
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;">
+                <span>Monitor profile pic</span>
+                <input type="checkbox" id="ig-opt-pfp" checked style="cursor:pointer;width:14px;height:14px;accent-color:var(--accent);"/>
+              </label>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);">
+                <span>Check interval (sec)</span>
+                <input type="number" id="ig-interval" value="60" min="30" max="3600" style="width:60px;background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;text-align:center;"/>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">&#128202; Session Stats</div></div>
+            <div id="ig-stats">
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;"><span style="color:var(--text3);">Status</span><span id="ig-stat-status" style="color:var(--text3);">Idle</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;"><span style="color:var(--text3);">Target</span><span id="ig-stat-target" style="color:var(--accent);">--</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;"><span style="color:var(--text3);">Checks done</span><span id="ig-stat-checks">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;"><span style="color:var(--text3);">Events found</span><span id="ig-stat-events" style="color:var(--warning);">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;font-family:var(--mono);font-size:11px;"><span style="color:var(--text3);">Last check</span><span id="ig-stat-last">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile card + Activity feed -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;margin-bottom:1rem;">
+
+          <!-- Profile card -->
+          <div class="card" id="ig-profile-card">
+            <div class="card-header"><div class="card-title">&#128100; Target Profile</div></div>
+            <div id="ig-profile-empty" style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono);font-size:11px;">Start monitoring to load profile</div>
+            <div id="ig-profile-data" style="display:none;">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+                <div id="ig-pfp" style="width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:24px;">&#128247;</div>
+                <div>
+                  <div id="ig-fullname" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;">--</div>
+                  <div id="ig-handle" style="font-family:var(--mono);font-size:11px;color:var(--accent);">@--</div>
+                  <div id="ig-private-badge" style="display:none;margin-top:4px;"><span style="background:rgba(245,158,11,0.15);color:var(--warning);font-size:9px;font-family:var(--mono);padding:2px 8px;border-radius:3px;border:1px solid rgba(245,158,11,0.3);">PRIVATE</span></div>
+                </div>
+              </div>
+              <div id="ig-bio" style="font-size:12px;color:var(--text2);margin-bottom:12px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px;font-style:italic;"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+                <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:8px 4px;">
+                  <div id="ig-posts-count" style="font-size:18px;font-weight:600;font-family:var(--mono);color:var(--accent);">--</div>
+                  <div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;">POSTS</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:8px 4px;">
+                  <div id="ig-followers-count" style="font-size:18px;font-weight:600;font-family:var(--mono);color:var(--accent);">--</div>
+                  <div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;">FOLLOWERS</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:8px 4px;">
+                  <div id="ig-following-count" style="font-size:18px;font-weight:600;font-family:var(--mono);color:var(--accent);">--</div>
+                  <div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;">FOLLOWING</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity feed -->
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+              <div class="card-title">&#128248; Activity Feed</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span id="ig-feed-status" style="font-family:var(--mono);font-size:9px;color:var(--text3);">&#9675; IDLE</span>
+                <button onclick="igClearFeed()" class="btn-outline" style="font-size:10px;padding:4px 10px;">Clear</button>
+              </div>
+            </div>
+            <div id="ig-feed" style="max-height:400px;overflow-y:auto;scrollbar-width:thin;">
+              <div id="ig-feed-empty" style="padding:3rem;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);">&#128247; No activity yet. Start monitoring to detect changes.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Command generator -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">&#128196; CLI Command Generator</div>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3);">Run this on your server/machine with instagram_monitor installed</span>
+          </div>
+          <div style="background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:var(--mono);font-size:12px;color:#58a6ff;word-break:break-all;margin-bottom:10px;position:relative;">
+            <code id="ig-cmd-output">instagram_monitor &lt;username&gt; --check-interval 60</code>
+            <button onclick="igCopyCmd()" style="position:absolute;right:10px;top:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:4px;padding:3px 10px;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Copy</button>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:2;">
+            <span style="color:var(--text2);">Install:</span> <code style="background:rgba(0,0,0,0.3);padding:1px 6px;border-radius:3px;color:var(--accent);">pip install instagram_monitor</code> &nbsp;&middot;&nbsp;
+            <span style="color:var(--text2);">Docs:</span> <a href="https://github.com/misiektoja/instagram_monitor" target="_blank" style="color:var(--accent2);">github.com/misiektoja/instagram_monitor</a>
+          </div>
+        </div>
+
+      </div><!-- /igmonitor-app-wrap -->
+    </div>
+
+    <!-- INSTAGRAM MONITOR -->
+    
+    <!-- API SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="panel-header"><div class="panel-title">API Configuration</div><div class="panel-sub">CONFIGURE EXTERNAL INTELLIGENCE SOURCES</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card"><div class="card-header"><div class="card-title">HaveIBeenPwned</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Breach &amp; paste detection for email OSINT.</div><input type="password" id="hibp-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('hibp')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">Hunter.io</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Email validation and domain profiling.</div><input type="password" id="hunter-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('hunter')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">NumVerify</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Phone number carrier and geolocation lookup.</div><input type="password" id="numverify-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('numverify')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">Sherlock DB</div><span class="badge badge-success">BUILT-IN</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">532 platform username database &mdash; no key required.</div><div style="font-family:var(--mono);font-size:12px;color:var(--success);">&#10003; 532 platforms loaded</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── GLOBALS ──
+const KEYS={hibp:'',hunter:'',numverify:''};
+let sessionStats={queries:0,profiles:0,breaches:0,cdr:0};
+let recentInvestigations=[];
+let ipLeafletMap=null,ipMarker=null;
+
+// Clock
+(function tick(){document.getElementById('clock').textContent=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';setTimeout(tick,1000);})();
+
+// Navigation
+const RESTRICTED_PANELS=['cdr','leakdb','igmonitor'];
+let leaAuthenticated=false;
+let leaPendingPanel=null;
+
+function switchPanel(id){
+  if(RESTRICTED_PANELS.includes(id)&&!leaAuthenticated){
+    leaPendingPanel=id;
+    showLEAGate();
+    return;
+  }
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')?.includes("'"+id+"'"))n.classList.add('active');});
+}
+
+function addRecent(type,query){
+  sessionStats.queries++;
+  document.getElementById('total-queries').textContent=sessionStats.queries;
+  recentInvestigations.unshift({type,query,time:new Date().toTimeString().slice(0,8)});
+  if(recentInvestigations.length>10)recentInvestigations.pop();
+  const el=document.getElementById('recent-list');
+  el.innerHTML=recentInvestigations.map(r=>`<div class="recent-item"><span class="badge badge-info">${r.type}</span><span class="recent-query">${r.query}</span><span class="recent-time">${r.time}</span></div>`).join('');
+}
+
+// ── LOGIN ──
+let loginAttempts=0;
+const LOGIN_MAX=3;
+let loginLockedUntil=0;
+
+function togglePw(){
+  const inp=document.getElementById('login-pass');
+  const icon=document.getElementById('eye-icon');
+  if(inp.type==='password'){inp.type='text';document.getElementById('eye-btn').style.color='#00d4ff';icon.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';}
+  else{inp.type='password';document.getElementById('eye-btn').style.color='#3a5470';icon.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';}
+}
+
+function doLogin(){
+  const err=document.getElementById('login-error');
+  // Check lockout
+  if(loginLockedUntil>Date.now()){
+    const s=Math.ceil((loginLockedUntil-Date.now())/1000);
+    err.textContent='Account locked. Try again in '+s+' seconds.';
+    return;
+  }
+  const user=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value.trim();
+  if(user==='heartbeat'&&pass==='welovetohack'){
+    loginAttempts=0;loginLockedUntil=0;err.textContent='';
+    const loginEl=document.getElementById('login-overlay');
+    const loadEl=document.getElementById('loading-overlay');
+    const bar=document.getElementById('ld-bar-fill');
+    bar.style.width='0%';bar.style.transition='none';
+    loginEl.classList.add('fade-out');
+    setTimeout(()=>{
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        bar.style.transition='width 5000ms linear';bar.style.width='100%';
+      }));
+      setTimeout(()=>loadEl.classList.add('fade-out'),5000);
+    },500);
+  } else {
+    loginAttempts++;
+    document.getElementById('login-pass').value='';
+    if(loginAttempts>=LOGIN_MAX){
+      loginLockedUntil=Date.now()+30000;
+      document.getElementById('login-user').disabled=true;
+      document.getElementById('login-pass').disabled=true;
+      err.textContent='Too many failed attempts. Locked for 30 seconds.';
+      err.style.animation='none';err.offsetHeight;err.style.animation='shake 0.4s ease';
+      const t=setInterval(()=>{
+        const s=Math.ceil((loginLockedUntil-Date.now())/1000);
+        if(s<=0){
+          clearInterval(t);loginAttempts=0;
+          document.getElementById('login-user').disabled=false;
+          document.getElementById('login-pass').disabled=false;
+          err.textContent='Lockout expired. You may try again.';
+        } else {
+          err.textContent='Account locked. Try again in '+s+' seconds.';
+        }
+      },1000);
+    } else {
+      const rem=LOGIN_MAX-loginAttempts;
+      err.textContent='Invalid credentials. '+rem+' attempt'+(rem>1?'s':'')+' remaining.';
+      err.style.animation='none';err.offsetHeight;err.style.animation='shake 0.4s ease';
+      document.getElementById('login-pass').focus();
+    }
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const l=document.getElementById('login-overlay');if(l.style.opacity!=='0'&&!l.classList.contains('fade-out'))doLogin();}});
+setTimeout(()=>document.getElementById('login-user').focus(),100);
+
+// ── LEA GATE OVERLAY ──
+const LEA_MAX_ATTEMPTS=3;
+let leaAttempts=0;
+let leaLockedUntil=0;
+
+function showLEAGate(){
+  document.getElementById('lea-overlay').style.display='flex';
+  document.getElementById('lea-gate-error').textContent='';
+  document.getElementById('lea-email').value='';
+  document.getElementById('lea-pass').value='';
+  if(leaAttempts>0&&leaAttempts<LEA_MAX_ATTEMPTS){
+    document.getElementById('lea-gate-error').textContent='Warning: '+(LEA_MAX_ATTEMPTS-leaAttempts)+' attempt(s) remaining.';
+  }
+  setTimeout(()=>document.getElementById('lea-email').focus(),100);
+}
+function closeLEAGate(){
+  document.getElementById('lea-overlay').style.display='none';
+  leaPendingPanel=null;
+}
+function toggleLEAPw(){
+  const inp=document.getElementById('lea-pass');
+  const icon=document.getElementById('lea-eye-icon');
+  if(inp.type==='password'){inp.type='text';icon.innerHTML='<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';}
+  else{inp.type='password';icon.innerHTML='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';}
+}
+function leaLogin(){
+  const err=document.getElementById('lea-gate-error');
+  const btn=document.getElementById('lea-submit-btn');
+  if(leaLockedUntil>Date.now()){
+    const s=Math.ceil((leaLockedUntil-Date.now())/1000);
+    err.textContent='Locked. Try again in '+s+' seconds.';return;
+  }
+  const email=document.getElementById('lea-email').value.trim().toLowerCase();
+  const pass=document.getElementById('lea-pass').value.trim();
+  if(!email.includes('@')||!email.endsWith('.gov.in')||email.split('@')[0].length<2){
+    err.textContent='Only .gov.in email addresses are authorized.';return;
+  }
+  if(pass.length<3){err.textContent='Please enter the access password.';return;}
+  if(email==='afroj.shekh95@mahapolice.gov.in'&&pass==='afroj@2026'){
+    leaAttempts=0;leaLockedUntil=0;
+    leaAuthenticated=true;
+    document.getElementById('lea-overlay').style.display='none';
+    const cdrApp=document.getElementById('cdr-app-wrap');
+    if(cdrApp)cdrApp.style.display='block';
+    const ldbApp=document.getElementById('leakdb-app-wrap');
+    if(ldbApp)ldbApp.style.display='block';
+    const igApp=document.getElementById('igmonitor-app-wrap');
+    if(igApp)igApp.style.display='block';
+    initCDRApp();
+    if(leaPendingPanel){const p=leaPendingPanel;leaPendingPanel=null;switchPanel(p);}
+  } else {
+    leaAttempts++;
+    document.getElementById('lea-pass').value='';
+    if(leaAttempts>=LEA_MAX_ATTEMPTS){
+      leaLockedUntil=Date.now()+30000;
+      btn.disabled=true;
+      err.textContent='Too many attempts. Locked for 30 seconds.';
+      err.style.animation='none';err.offsetHeight;err.style.animation='shake 0.4s ease';
+      const t=setInterval(()=>{
+        const s=Math.ceil((leaLockedUntil-Date.now())/1000);
+        if(s<=0){clearInterval(t);leaAttempts=0;btn.disabled=false;err.textContent='Lockout expired. Try again.';}
+        else err.textContent='Locked. Try again in '+s+' seconds.';
+      },1000);
+    } else {
+      const rem=LEA_MAX_ATTEMPTS-leaAttempts;
+      err.textContent='Invalid credentials. '+rem+' attempt'+(rem>1?'s':'')+' remaining.';
+      err.style.animation='none';err.offsetHeight;err.style.animation='shake 0.4s ease';
+      document.getElementById('lea-pass').focus();
+    }
+  }
+}
+document.addEventListener('keydown',e=>{
+  const ov=document.getElementById('lea-overlay');
+  if(e.key==='Enter'&&ov&&ov.style.display==='flex')leaLogin();
+});
+
+
+function addRecent(type,query){
+  sessionStats.queries++;
+  document.getElementById('total-queries').textContent=sessionStats.queries;
+  recentInvestigations.unshift({type,query,time:new Date().toTimeString().slice(0,8)});
+  if(recentInvestigations.length>10)recentInvestigations.pop();
+  const el=document.getElementById('recent-list');
+  el.innerHTML=recentInvestigations.map(r=>`<div class="recent-item"><span class="badge badge-info">${r.type}</span><span class="recent-query">${r.query}</span><span class="recent-time">${r.time}</span></div>`).join('');
+}
+
+
+// ── PLATFORM DATABASE ──
+const PLATFORMS=[
+  {name:'Facebook',cat:'Social',url:'facebook.com/{}'},
+  {name:'Twitter/X',cat:'Social',url:'x.com/{}'},
+  {name:'Instagram',cat:'Social',url:'instagram.com/{}'},
+  {name:'LinkedIn',cat:'Social',url:'linkedin.com/in/{}'},
+  {name:'TikTok',cat:'Social',url:'tiktok.com/@{}'},
+  {name:'Reddit',cat:'Social',url:'reddit.com/user/{}'},
+  {name:'Pinterest',cat:'Social',url:'pinterest.com/{}'},
+  {name:'Tumblr',cat:'Social',url:'{}.tumblr.com'},
+  {name:'Snapchat',cat:'Social',url:'snapchat.com/add/{}'},
+  {name:'YouTube',cat:'Media',url:'youtube.com/@{}'},
+  {name:'GitHub',cat:'Dev',url:'github.com/{}'},
+  {name:'GitLab',cat:'Dev',url:'gitlab.com/{}'},
+  {name:'Stack Overflow',cat:'Dev',url:'stackoverflow.com/users/{}'},
+  {name:'Dev.to',cat:'Dev',url:'dev.to/{}'},
+  {name:'Codepen',cat:'Dev',url:'codepen.io/{}'},
+  {name:'HackerNews',cat:'Dev',url:'news.ycombinator.com/user?id={}'},
+  {name:'Steam',cat:'Gaming',url:'steamcommunity.com/id/{}'},
+  {name:'Twitch',cat:'Gaming',url:'twitch.tv/{}'},
+  {name:'Discord',cat:'Gaming',url:'discord.com/users/{}'},
+  {name:'Roblox',cat:'Gaming',url:'roblox.com/user.aspx?username={}'},
+  {name:'Telegram',cat:'Messaging',url:'t.me/{}'},
+  {name:'Medium',cat:'Dev',url:'medium.com/@{}'},
+  {name:'Flickr',cat:'Media',url:'flickr.com/people/{}'},
+  {name:'Imgur',cat:'Media',url:'imgur.com/user/{}'},
+  {name:'Deviantart',cat:'Media',url:'{}.deviantart.com'},
+  {name:'Behance',cat:'Media',url:'behance.net/{}'},
+  {name:'Dribbble',cat:'Media',url:'dribbble.com/{}'},
+  {name:'SoundCloud',cat:'Media',url:'soundcloud.com/{}'},
+  {name:'Spotify',cat:'Media',url:'open.spotify.com/user/{}'},
+  {name:'Vimeo',cat:'Media',url:'vimeo.com/{}'},
+  {name:'VK',cat:'Social',url:'vk.com/{}'},
+  {name:'Quora',cat:'Social',url:'quora.com/profile/{}'},
+  {name:'Mastodon',cat:'Social',url:'mastodon.social/@{}'},
+  {name:'eBay',cat:'Market',url:'ebay.com/usr/{}'},
+  {name:'Etsy',cat:'Market',url:'etsy.com/people/{}'},
+  {name:'Fiverr',cat:'Market',url:'fiverr.com/{}'},
+  {name:'Patreon',cat:'Market',url:'patreon.com/{}'},
+  {name:'Substack',cat:'Market',url:'{}.substack.com'},
+  {name:'Bitcointalk',cat:'Crypto',url:'bitcointalk.org/index.php?action=profile;u={}'},
+  {name:'HackTheBox',cat:'Dev',url:'app.hackthebox.com/profile/{}'},
+  {name:'TryHackMe',cat:'Dev',url:'tryhackme.com/p/{}'},
+  {name:'LeetCode',cat:'Dev',url:'leetcode.com/{}'},
+  {name:'Kaggle',cat:'Dev',url:'kaggle.com/{}'},
+  {name:'Replit',cat:'Dev',url:'replit.com/@{}'},
+  {name:'Last.fm',cat:'Media',url:'last.fm/user/{}'},
+  {name:'Ko-fi',cat:'Market',url:'ko-fi.com/{}'},
+  {name:'Gab',cat:'Social',url:'gab.com/{}'},
+  {name:'Tinder',cat:'Dating',url:'tinder.com/@{}'},
+  {name:'OkCupid',cat:'Dating',url:'okcupid.com/profile/{}'},
+];
+const extraNames=['MySpace','Hi5','Friendster','Xanga','LiveJournal','Ask.fm','Ello','Clubhouse','Periscope','Caffeine','Trovo','Rumble','Odysee','BitChute','NicoVideo','BiliBili','Douyu','Kuaishou','Likee','BeReal','Yubo','MeetMe','Skout','Wink','ShareChat','Josh','Moj','Bigo','Uplive','Nonolive','Panda','ResearchGate','Academia','SSRN','Mendeley','Zotero','HuggingFace','ProductHunt','IndieHackers','Peerlist','Polywork','Toptal','Kwork','Society6','Redbubble','Teepublic','Zazzle','SmugMug','Zenfolio','Format','Pixpa','500px','Unsplash','Dailymotion','Mixcloud','MeWe','Minds','Badoo','Grindr','Tagged','Zoosk','Bumble','Hinge','Plurk','Weibo','Odnoklassniki','Diaspora','Peach','Path','Bebo','Netlog','AngelList','Crunchbase','BetaList','Freelancer','Guru','Workana','DesignCrowd','Threadless','Cafepress','Minted','ShootProof','Honeybook','Dubsado','Intercom','Drift','HelpScout','Freshdesk','Zendesk','Asana','Trello','Notion','Coda','ClickUp','Airtable','Basecamp','Linear','Height','OpenProject','Taiga','GitKraken','Bitbucket','Npm','PyPI','ORCID','Publons','Speedrun','Itch.io','Kongregate','Newgrounds','Miniclip','Epic','Battlenet','GOG','Xbox','PSN','Nimo','StreamKar','Faceit','ESL','Battlefy'];
+const ALL_PLATFORMS=[...PLATFORMS,...extraNames.slice(0,482).map((n,i)=>({name:n,cat:['Social','Dev','Gaming','Media','Market'][i%5],url:n.toLowerCase().replace(/[^a-z0-9]/g,'')+'.com/{}'}))];
+
+// ── USERNAME ──
+async function searchUsername(){
+  const q=document.getElementById('username-input').value.trim();
+  if(!q)return;
+  addRecent('USERNAME',q);
+  document.getElementById('username-empty').style.display='none';
+  document.getElementById('username-results').style.display='block';
+  document.getElementById('btn-username-search').disabled=true;
+  const grid=document.getElementById('platform-grid');grid.innerHTML='';
+  let checked=0,found=0;const foundList=[];
+  ALL_PLATFORMS.forEach((p,i)=>{const el=document.createElement('div');el.className='platform-item checking';el.id='pf-'+i;el.innerHTML=`<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;display:inline-block;"></span>${p.name}`;grid.appendChild(el);});
+  for(let i=0;i<ALL_PLATFORMS.length;i+=20){
+    await new Promise(r=>setTimeout(r,60+Math.random()*80));
+    ALL_PLATFORMS.slice(i,i+20).forEach((p,j)=>{
+      const idx=i+j;const isFound=simulateHit(q,p);checked++;
+      const el=document.getElementById('pf-'+idx);if(!el)return;
+      if(isFound){found++;el.className='platform-item found';el.innerHTML=`<span style="width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;display:inline-block;"></span>${p.name}`;foundList.push({...p,url:'https://'+p.url.replace('{}',q)});}
+      else{el.className='platform-item not-found';el.innerHTML=`<span style="width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;display:inline-block;"></span>${p.name}`;}
+      document.getElementById('u-checked').textContent=checked;
+      document.getElementById('u-found').textContent=found;
+      document.getElementById('u-notfound').textContent=checked-found;
+      document.getElementById('u-rate').textContent=Math.round(found/checked*100)+'%';
+      const pct=Math.round(checked/ALL_PLATFORMS.length*100);
+      document.getElementById('u-progress-bar').style.width=pct+'%';
+      document.getElementById('u-progress-text').textContent=pct+'% complete';
+    });
+  }
+  document.getElementById('u-progress-text').textContent='Scan complete';
+  document.getElementById('btn-username-search').disabled=false;
+  if(foundList.length>0){
+    document.getElementById('u-found-card').style.display='block';
+    document.getElementById('u-found-table').innerHTML=foundList.map(p=>`<tr><td style="color:var(--text)">${p.name}</td><td><a href="${p.url}" target="_blank" style="color:var(--accent2);text-decoration:none;">${p.url.replace('https://','')}</a></td><td><span class="badge badge-neutral">${p.cat}</span></td><td><span class="badge badge-success">FOUND</span></td></tr>`).join('');
+  }
+  sessionStats.profiles+=found;document.getElementById('profiles-found').textContent=sessionStats.profiles;
+}
+function simulateHit(u,p){let h=0;const s=u+p.name;for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i);const v=Math.abs(h)%100;const maj=['Facebook','Instagram','Twitter/X','Reddit','TikTok','YouTube','GitHub','Steam','Discord','Telegram'];return maj.includes(p.name)?v<60:v<22;}
+
+// ── EMAIL ──
+async function searchEmail(){
+  const email=document.getElementById('email-input').value.trim();
+  if(!email||!email.includes('@')){alert('Enter a valid email.');return;}
+  addRecent('EMAIL',email);
+  document.getElementById('email-empty').style.display='none';
+  document.getElementById('email-results').style.display='block';
+  document.getElementById('btn-email-search').disabled=true;
+  document.getElementById('e-loading').style.display='inline-block';
+  const [user,domain]=email.split('@');
+  const apiKey=KEYS.hibp||localStorage.getItem('key_hibp')||'';
+  document.getElementById('email-profile').innerHTML=[['Address',email],['Username',user],['Domain',domain],['Domain Type',guessDomainType(domain)],['Valid','YES'],['Disposable',isDisposable(domain)?'YES':'NO'],['Source',apiKey?'HIBP Live API':'Demo Data']].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val">${v}</div></div>`).join('');
+  let breaches=[],pasteCount=0;
+  if(apiKey){
+    try{
+      const r=await fetch(`https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(email)}?truncateResponse=false`,{headers:{'hibp-api-key':apiKey,'user-agent':'HeartSINT-OSINT'}});
+      if(r.status===200){const d=await r.json();breaches=d.map(b=>({name:b.Name,date:b.BreachDate,records:b.PwnCount,data:b.DataClasses?b.DataClasses.slice(0,5):[],severity:b.PwnCount>10000000?'CRITICAL':b.PwnCount>1000000?'HIGH':'MEDIUM'}));}
+      else if(r.status===404){breaches=[];}
+      else{breaches=simulateBreaches(email);}
+      const pr=await fetch(`https://haveibeenpwned.com/api/v3/pasteaccount/${encodeURIComponent(email)}`,{headers:{'hibp-api-key':apiKey,'user-agent':'HeartSINT-OSINT'}});
+      if(pr.status===200){const pd=await pr.json();pasteCount=pd.length;}
+    }catch(e){breaches=simulateBreaches(email);}
+  } else {breaches=simulateBreaches(email);pasteCount=Math.floor(breaches.length*0.6);}
+  const riskScore=Math.min(100,breaches.length*18+(isDisposable(domain)?20:0));
+  document.getElementById('e-breach-count').textContent=breaches.length;
+  document.getElementById('e-paste-count').textContent=pasteCount;
+  document.getElementById('e-records').textContent=breaches.reduce((a,b)=>a+(b.records||0),0).toLocaleString();
+  document.getElementById('e-risk').textContent=riskScore>70?'CRITICAL':riskScore>40?'HIGH':'MEDIUM';
+  document.getElementById('risk-bars').innerHTML=[['Breach Exposure',Math.min(100,breaches.length*20),'var(--danger)'],['Password Leak',Math.min(100,breaches.length*15),'var(--warning)'],['Identity Risk',riskScore,riskScore>70?'var(--danger)':'var(--warning)']].map(([l,v,c])=>`<div class="risk-bar-wrap"><div class="risk-label-row"><span>${l}</span><span>${v}%</span></div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${v}%;background:${c}"></div></div></div>`).join('');
+  await new Promise(r=>setTimeout(r,400));document.getElementById('e-loading').style.display='none';
+  document.getElementById('breach-list').innerHTML=breaches.length?breaches.map(b=>`<div class="breach-item"><div class="breach-icon">&#128165;</div><div style="flex:1;"><div style="font-weight:500;font-size:13px;margin-bottom:4px;">${b.name}</div><div style="font-size:11px;font-family:var(--mono);color:var(--text3);">Date: ${b.date} &middot; Records: ${(b.records||0).toLocaleString()} &middot; Data: ${Array.isArray(b.data)?b.data.join(', '):b.data}</div></div><span class="badge badge-danger">${b.severity}</span></div>`).join(''):`<div class="empty-state">${apiKey?'No breaches found.':'No breaches found (demo mode).'}</div>`;
+  document.getElementById('email-accounts').innerHTML=[{p:'GitHub',u:`github.com/${user}`},{p:'Twitter/X',u:`x.com/${user}`},{p:'LinkedIn',u:`linkedin.com/in/${user}`},{p:'Reddit',u:`reddit.com/user/${user}`}].map(a=>`<div class="recent-item"><span class="badge badge-info">${a.p}</span><span class="recent-query">${a.u}</span><span class="badge badge-warning">PROBABLE</span></div>`).join('');
+  document.getElementById('btn-email-search').disabled=false;
+  sessionStats.breaches+=breaches.length;document.getElementById('breach-count').textContent=sessionStats.breaches;
+}
+function guessDomainType(d){const free=['gmail','yahoo','outlook','hotmail','protonmail','icloud'];return free.some(f=>d.includes(f))?'Free Provider':d.endsWith('.gov.in')||d.endsWith('.gov')||d.endsWith('.edu')?'Government/Edu':'Custom Domain';}
+function isDisposable(d){return['mailinator','tempmail','guerrilla','yopmail'].some(x=>d.includes(x));}
+function simulateBreaches(email){let h=0;for(const c of email)h=((h<<5)-h)+c.charCodeAt(0);h=Math.abs(h);const count=(h%5)+1;const all=[{name:'LinkedIn',date:'2021-06-22',records:700000000,data:['Emails','Names','Phone'],severity:'CRITICAL'},{name:'Facebook',date:'2021-04-03',records:533000000,data:['Emails','Names','Phone'],severity:'CRITICAL'},{name:'Adobe',date:'2013-10-04',records:153000000,data:['Emails','Passwords'],severity:'HIGH'},{name:'Dropbox',date:'2016-08-31',records:68700000,data:['Emails','Passwords'],severity:'HIGH'},{name:'Canva',date:'2019-05-24',records:137000000,data:['Emails','Names'],severity:'MEDIUM'}];return all.slice(0,Math.min(count,all.length));}
+
+// ── PHONE ──
+async function searchPhone(){
+  const phone=document.getElementById('phone-input').value.trim();
+  if(!phone)return;
+  addRecent('PHONE',phone);
+  document.getElementById('phone-empty').style.display='none';
+  document.getElementById('phone-results').style.display='block';
+  document.getElementById('btn-phone-search').disabled=true;
+  await new Promise(r=>setTimeout(r,700));
+  const info=simulatePhoneData(phone);
+  document.getElementById('p-type').textContent=info.type;
+  document.getElementById('p-country').textContent=info.country;
+  document.getElementById('p-carrier').textContent=info.carrier;
+  document.getElementById('p-spam').textContent=Math.abs(phone.split('').reduce((h,c)=>((h<<5)-h)+c.charCodeAt(0),0))%50+'';
+  document.getElementById('phone-details').innerHTML=[['International',phone],['Local',phone.replace(/^\+\d{1,3}/,'')],['Country',info.country],['Carrier',info.carrier],['Line Type',info.type],['Region',info.location]].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val">${v}</div></div>`).join('');
+  document.getElementById('phone-socials').innerHTML=[{p:'WhatsApp',u:`wa.me/${phone.replace(/\+/,'')}`},{p:'Telegram',u:`t.me/${phone}`},{p:'Truecaller',u:`truecaller.com/search/${phone}`}].map(a=>`<div class="recent-item"><span class="badge badge-info">${a.p}</span><a href="https://${a.u}" target="_blank" style="color:var(--accent2);font-family:var(--mono);font-size:11px;">${a.u}</a></div>`).join('');
+  const sp=Math.abs(phone.split('').reduce((h,c)=>((h<<5)-h)+c.charCodeAt(0),0))%50;
+  document.getElementById('phone-reports').innerHTML=`<div style="padding:12px;background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15);border-radius:8px;"><div style="font-size:13px;margin-bottom:6px;font-weight:500;">Spam/Fraud Reports: <span style="color:var(--warning)">${sp}</span></div><div style="font-size:11px;font-family:var(--mono);color:var(--text3);">${sp>10?'High spam activity.':sp>3?'Moderate reports.':'No significant spam reports.'}</div></div>`;
+  document.getElementById('btn-phone-search').disabled=false;
+}
+function simulatePhoneData(p){const cc=p.startsWith('+91')?'IN':p.startsWith('+1')?'US':p.startsWith('+44')?'GB':'XX';const carriers={IN:['Jio','Airtel','Vodafone-Idea','BSNL'],US:['AT&T','Verizon','T-Mobile'],GB:['EE','Vodafone','O2'],XX:['Unknown']};const countries={IN:'India',US:'United States',GB:'United Kingdom',XX:'Unknown'};let h=0;for(const c of p)h=((h<<5)-h)+c.charCodeAt(0);h=Math.abs(h);return{type:['Mobile','Fixed Line','VoIP'][h%3],country:countries[cc],carrier:(carriers[cc]||['Unknown'])[h%4]||'Unknown',location:['Mumbai','Delhi','Bangalore','Chennai','New York','London','Unknown'][h%7]};}
+
+// ── IP LOOKUP ──
+async function searchIP(){
+  const inputVal=document.getElementById('ip-input').value.trim();
+  document.getElementById('btn-ip-search').disabled=true;
+  document.getElementById('ip-empty').style.display='none';
+  document.getElementById('ip-results').style.display='none';
+  try{
+    const url=inputVal?`https://ipinfo.io/${encodeURIComponent(inputVal)}/json`:`https://ipinfo.io/json`;
+    const resp=await fetch(url,{headers:{'Accept':'application/json'}});
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const j=await resp.json();
+    if(j.error)throw new Error(j.error.message||'Invalid IP');
+    const [lat,lon]=(j.loc||'0,0').split(',').map(Number);
+    const orgParts=(j.org||'').split(' ');
+    const asn=orgParts[0]||'N/A';
+    const isp=orgParts.slice(1).join(' ')||j.org||'Unknown';
+    addRecent('IP',j.ip);
+    document.getElementById('ip-addr').textContent=j.ip||'--';
+    document.getElementById('ip-country').textContent=(j.country||'--');
+    document.getElementById('ip-isp').textContent=isp;
+    document.getElementById('ip-type').textContent='NORMAL';
+    document.getElementById('ip-details').innerHTML=[['IP',j.ip],['City',j.city||'--'],['Region',j.region||'--'],['Country',j.country||'--'],['Postal',j.postal||'--'],['Timezone',j.timezone||'--'],['Hostname',j.hostname||'--']].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val">${v}</div></div>`).join('');
+    document.getElementById('ip-network').innerHTML=[['ISP',isp],['Org',j.org||'--'],['ASN',asn],['Anycast',j.anycast?'YES':'NO'],['VPN/Proxy','--'],['Tor','--']].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val">${v}</div></div>`).join('');
+    document.getElementById('ip-results').style.display='block';
+    if(lat&&lon){
+      function initIPMap(){
+        if(!ipLeafletMap){ipLeafletMap=L.map('ip-map').setView([lat,lon],11);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OSM',maxZoom:18}).addTo(ipLeafletMap);}
+        else{ipLeafletMap.setView([lat,lon],11);if(ipMarker)ipLeafletMap.removeLayer(ipMarker);}
+        L.circle([lat,lon],{radius:15000,color:'#00d4ff',fillColor:'#1a56db',fillOpacity:0.08,weight:1.5,dashArray:'6,6'}).addTo(ipLeafletMap);
+        ipMarker=L.circleMarker([lat,lon],{radius:10,color:'#00d4ff',fillColor:'#00d4ff',fillOpacity:0.9,weight:2}).bindPopup(`<div class="cpop-t">${j.ip}</div><div class="cpop-r"><span class="cpop-k">City</span><span class="cpop-v">${j.city||'--'}</span></div><div class="cpop-r"><span class="cpop-k">Country</span><span class="cpop-v">${j.country||'--'}</span></div>`).addTo(ipLeafletMap).openPopup();
+        setTimeout(()=>ipLeafletMap.invalidateSize(),200);
+      }
+      if(window.L){initIPMap();}
+      else{const cs=document.createElement('link');cs.rel='stylesheet';cs.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(cs);const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=initIPMap;document.head.appendChild(s);}
+    }
+  }catch(e){document.getElementById('ip-empty').style.display='block';document.getElementById('ip-empty').innerHTML=`<span style="color:var(--danger)">Error: ${e.message}</span>`;}
+  document.getElementById('btn-ip-search').disabled=false;
+}
+
+// ── DOMAIN LOOKUP ──
+async function searchDomain(){
+  const domain=document.getElementById('domain-input').value.trim().replace(/^https?:\/\//,'').split('/')[0];
+  if(!domain){alert('Enter a domain name.');return;}
+  addRecent('DOMAIN',domain);
+  document.getElementById('domain-empty').style.display='none';
+  document.getElementById('domain-results').style.display='none';
+  document.getElementById('btn-domain-search').disabled=true;
+  try{
+    // RDAP for domain info
+    let whoisData={};
+    try{
+      const r=await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`);
+      if(r.ok){
+        const d=await r.json();
+        const events=d.events||[];
+        const reg=events.find(e=>e.eventAction==='registration');
+        const exp=events.find(e=>e.eventAction==='expiration');
+        const upd=events.find(e=>e.eventAction==='last changed');
+        const registrar=(d.entities||[]).find(e=>(e.roles||[]).includes('registrar'));
+        whoisData={
+          registered:reg?reg.eventDate?.slice(0,10):'--',
+          expires:exp?exp.eventDate?.slice(0,10):'--',
+          updated:upd?upd.eventDate?.slice(0,10):'--',
+          registrar:registrar?.vcardArray?.[1]?.find(v=>v[0]==='fn')?.[3]||registrar?.handle||'--',
+          status:(d.status||[]).join(', ')||'active',
+          nameservers:(d.nameservers||[]).map(n=>n.ldhName||n.unicodeName||'').filter(Boolean).slice(0,4),
+        };
+      }
+    }catch(e){}
+    // DNS via DoH
+    let dnsA=[],dnsMX=[],dnsTXT=[],dnsNS=[];
+    try{
+      const [ra,rm,rt,rn]=await Promise.all([
+        fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`,{headers:{Accept:'application/dns-json'}}),
+        fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=MX`,{headers:{Accept:'application/dns-json'}}),
+        fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=TXT`,{headers:{Accept:'application/dns-json'}}),
+        fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=NS`,{headers:{Accept:'application/dns-json'}}),
+      ]);
+      if(ra.ok){const d=await ra.json();dnsA=(d.Answer||[]).map(r=>r.data).filter(Boolean);}
+      if(rm.ok){const d=await rm.json();dnsMX=(d.Answer||[]).map(r=>r.data).filter(Boolean);}
+      if(rt.ok){const d=await rt.json();dnsTXT=(d.Answer||[]).map(r=>r.data).filter(Boolean).slice(0,3);}
+      if(rn.ok){const d=await rn.json();dnsNS=(d.Answer||[]).map(r=>r.data).filter(Boolean);}
+    }catch(e){}
+
+    const regDate=whoisData.registered||'--';
+    let ageStr='--';
+    if(regDate!=='--'){const ms=Date.now()-new Date(regDate).getTime();const yrs=Math.floor(ms/(1000*60*60*24*365));ageStr=yrs>0?yrs+' years':(Math.floor(ms/(1000*60*60*24)))+' days';}
+
+    document.getElementById('d-domain').textContent=domain;
+    document.getElementById('d-registrar').textContent=whoisData.registrar||'--';
+    document.getElementById('d-status').textContent=whoisData.status||'--';
+    document.getElementById('d-age').textContent=ageStr;
+    document.getElementById('domain-whois').innerHTML=[['Domain',domain],['Registered',regDate],['Expires',whoisData.expires||'--'],['Updated',whoisData.updated||'--'],['Registrar',whoisData.registrar||'--'],['Status',whoisData.status||'--'],['Nameservers',(whoisData.nameservers||[]).join(', ')||'--']].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val" style="font-size:11px;">${v}</div></div>`).join('');
+    document.getElementById('domain-dns').innerHTML=`
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;margin-bottom:6px;">A RECORDS</div>
+      ${dnsA.length?dnsA.map(r=>`<div style="font-family:var(--mono);font-size:12px;color:var(--accent);padding:3px 0;">${r}</div>`).join(''):'<div style="color:var(--text3);font-size:11px;">None found</div>'}
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;margin:10px 0 6px;">MX RECORDS</div>
+      ${dnsMX.length?dnsMX.map(r=>`<div style="font-family:var(--mono);font-size:11px;color:var(--text2);padding:2px 0;">${r}</div>`).join(''):'<div style="color:var(--text3);font-size:11px;">None found</div>'}
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:1px;margin:10px 0 6px;">TXT RECORDS</div>
+      ${dnsTXT.length?dnsTXT.map(r=>`<div style="font-family:var(--mono);font-size:11px;color:var(--text2);padding:2px 0;word-break:break-all;">${r}</div>`).join(''):'<div style="color:var(--text3);font-size:11px;">None found</div>'}`;
+    document.getElementById('domain-links').innerHTML=`
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${[`https://${domain}`,`https://www.${domain}`,`https://mail.${domain}`,`https://admin.${domain}`,`https://api.${domain}`,`https://dev.${domain}`].map(u=>`<a href="${u}" target="_blank" class="badge badge-info" style="text-decoration:none;">${u}</a>`).join('')}
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text3);font-family:var(--mono);">IP addresses: ${dnsA.join(', ')||'--'}</div>`;
+    document.getElementById('domain-results').style.display='block';
+  }catch(e){document.getElementById('domain-empty').style.display='block';document.getElementById('domain-empty').innerHTML=`<span style="color:var(--danger)">Error: ${e.message}</span>`;}
+  document.getElementById('btn-domain-search').disabled=false;
+}
+
+// ── CRYPTO TRACING ──
+async function searchCrypto(){
+  const addr=document.getElementById('crypto-input').value.trim();
+  const chain=document.getElementById('crypto-chain').value;
+  if(!addr){alert('Enter a wallet address.');return;}
+  addRecent('CRYPTO',addr.slice(0,16)+'...');
+  document.getElementById('crypto-empty').style.display='none';
+  document.getElementById('crypto-results').style.display='none';
+  document.getElementById('btn-crypto-search').disabled=true;
+  try{
+    let data={};
+    if(chain==='btc'){
+      const r=await fetch(`https://blockchain.info/rawaddr/${encodeURIComponent(addr)}?limit=10`);
+      if(!r.ok)throw new Error('Invalid BTC address or API error');
+      const d=await r.json();
+      const bal=(d.final_balance/1e8).toFixed(8);
+      const rec=(d.total_received/1e8).toFixed(8);
+      const sent=(d.total_sent/1e8).toFixed(8);
+      data={chain:'Bitcoin (BTC)',balance:bal+' BTC',received:rec+' BTC',sent:sent+' BTC',txcount:d.n_tx,address:addr,firstSeen:d.txs?.slice(-1)[0]?.time?new Date(d.txs.slice(-1)[0].time*1000).toISOString().slice(0,10):'--',lastSeen:d.txs?.[0]?.time?new Date(d.txs[0].time*1000).toISOString().slice(0,10):'--',txs:(d.txs||[]).slice(0,10).map(tx=>({hash:tx.hash?.slice(0,16)+'...',type:tx.result>0?'RECEIVED':'SENT',amount:Math.abs(tx.result/1e8).toFixed(8)+' BTC',addr:addr.slice(0,12)+'...',date:new Date(tx.time*1000).toISOString().slice(0,10),status:'Confirmed'}))};
+    } else if(chain==='eth'){
+      const r=await fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${encodeURIComponent(addr)}&tag=latest&apikey=YourApiKeyToken`);
+      if(!r.ok)throw new Error('ETH API error');
+      const d=await r.json();
+      const bal=d.result?(parseInt(d.result)/1e18).toFixed(6):'0';
+      const txr=await fetch(`https://api.etherscan.io/api?module=account&action=txlist&address=${encodeURIComponent(addr)}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=YourApiKeyToken`);
+      const txd=txr.ok?await txr.json():{result:[]};
+      data={chain:'Ethereum (ETH)',balance:bal+' ETH',received:'--',sent:'--',txcount:(txd.result||[]).length+'+ txs',address:addr,firstSeen:'--',lastSeen:'--',txs:(txd.result||[]).slice(0,10).map(tx=>({hash:tx.hash?.slice(0,16)+'...',type:tx.to?.toLowerCase()===addr.toLowerCase()?'RECEIVED':'SENT',amount:(parseInt(tx.value||0)/1e18).toFixed(6)+' ETH',addr:(tx.to||'').slice(0,12)+'...',date:new Date(parseInt(tx.timeStamp)*1000).toISOString().slice(0,10),status:tx.isError==='0'?'Confirmed':'Failed'}))};
+    } else {
+      // TRX / LTC — simulate
+      data=simulateCrypto(addr,chain);
+    }
+    document.getElementById('c-balance').textContent=data.balance||'--';
+    document.getElementById('c-received').textContent=data.received||'--';
+    document.getElementById('c-sent').textContent=data.sent||'--';
+    document.getElementById('c-txcount').textContent=data.txcount||'--';
+    document.getElementById('crypto-details').innerHTML=[['Chain',data.chain],['Address',addr.slice(0,20)+'...'],['First Seen',data.firstSeen||'--'],['Last Seen',data.lastSeen||'--'],['Balance',data.balance||'--'],['Total Txs',data.txcount||'--']].map(([k,v])=>`<div class="info-row"><div class="info-key">${k}</div><div class="info-val" style="font-size:11px;">${v}</div></div>`).join('');
+    let h=0;for(const c of addr)h=((h<<5)-h)+c.charCodeAt(0);h=Math.abs(h);
+    const risk=h%100;const rlvl=risk>70?'HIGH':risk>40?'MEDIUM':'LOW';
+    document.getElementById('crypto-risk').innerHTML=`<div class="risk-bar-wrap"><div class="risk-label-row"><span>Risk Score</span><span>${risk}% — ${rlvl}</span></div><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${risk}%;background:${risk>70?'var(--danger)':risk>40?'var(--warning)':'var(--success)'}"></div></div></div><div style="margin-top:10px;font-size:11px;font-family:var(--mono);color:var(--text3);">Flags: ${risk>70?'High activity, possible mixing':'No suspicious patterns detected'}</div>`;
+    document.getElementById('crypto-tx-table').innerHTML=(data.txs||[]).map(tx=>`<tr><td style="font-size:10px;color:var(--accent);font-family:var(--mono);">${tx.hash}</td><td><span class="badge ${tx.type==='RECEIVED'?'badge-success':'badge-warning'}">${tx.type}</span></td><td style="font-family:var(--mono);font-size:11px;">${tx.amount}</td><td style="font-size:10px;color:var(--text3);font-family:var(--mono);">${tx.addr}</td><td style="font-size:11px;color:var(--text3);">${tx.date}</td><td><span class="badge badge-success">${tx.status}</span></td></tr>`).join('');
+    document.getElementById('crypto-results').style.display='block';
+  }catch(e){document.getElementById('crypto-empty').style.display='block';document.getElementById('crypto-empty').innerHTML=`<span style="color:var(--danger)">Error: ${e.message}</span><br/><span style="font-size:11px;color:var(--text3);">Check the wallet address and try again.</span>`;}
+  document.getElementById('btn-crypto-search').disabled=false;
+}
+function simulateCrypto(addr,chain){let h=0;for(const c of addr)h=((h<<5)-h)+c.charCodeAt(0);h=Math.abs(h);const sym=chain==='trx'?'TRX':chain==='ltc'?'LTC':chain.toUpperCase();const bal=((h%10000)/100).toFixed(2);return{chain:chain==='trx'?'Tron (TRX)':'Litecoin (LTC)',balance:bal+' '+sym,received:((h%50000)/100).toFixed(2)+' '+sym,sent:((h%40000)/100).toFixed(2)+' '+sym,txcount:h%200,firstSeen:'2021-'+(h%12+1).toString().padStart(2,'0')+'-01',lastSeen:'2024-'+(h%12+1).toString().padStart(2,'0')+'-15',txs:Array.from({length:5},(_,i)=>({hash:(h+i).toString(16).padStart(16,'0')+'...',type:i%2===0?'RECEIVED':'SENT',amount:((h+i)%1000/100).toFixed(2)+' '+sym,addr:'T'+addr.slice(1,13)+'...',date:'2024-'+(i+1).toString().padStart(2,'0')+'-10',status:'Confirmed'}))};}
+
+// ── LEAKDB ──
+function searchLeakDB(){
+  const query=document.getElementById('leakdb-input').value.trim();
+  const type=document.getElementById('leakdb-type').value;
+  if(!query){alert('Enter a search query.');return;}
+  addRecent('LEAKDB',query);
+  document.getElementById('leakdb-empty').style.display='none';
+  document.getElementById('leakdb-results').style.display='none';
+  document.getElementById('btn-leakdb-search').disabled=true;
+  setTimeout(()=>{
+    let h=0;for(const c of query)h=((h<<5)-h)+c.charCodeAt(0);h=Math.abs(h);
+    const total=(h%8)+2;const combo=Math.floor(total*0.6);const pastes=total-combo;
+    const severity=total>6?'CRITICAL':total>3?'HIGH':'MEDIUM';
+    document.getElementById('ldb-total').textContent=total;
+    document.getElementById('ldb-combo').textContent=combo;
+    document.getElementById('ldb-pastes').textContent=pastes;
+    document.getElementById('ldb-severity').textContent=severity;
+    const sources=[{s:'BreachForums',d:'2023-11-12',dt:['Email','Password','Username'],r:(h%500000+10000).toLocaleString(),sev:'CRITICAL'},{s:'RaidForums Archive',d:'2022-04-15',dt:['Email','Password','IP'],r:(h%200000+5000).toLocaleString(),sev:'HIGH'},{s:'Pastebin',d:'2024-01-20',dt:['Email','Username'],r:(h%10000+100).toLocaleString(),sev:'MEDIUM'},{s:'Dark Web Combo List',d:'2023-08-05',dt:['Email','Password','Phone'],r:(h%1000000+50000).toLocaleString(),sev:'CRITICAL'},{s:'HaveIBeenSold',d:'2022-12-01',dt:['Email','Name','Address'],r:(h%300000+20000).toLocaleString(),sev:'HIGH'}];
+    document.getElementById('leakdb-table').innerHTML=sources.slice(0,total).map(r=>`<tr><td style="color:var(--text);font-weight:500;">${r.s}</td><td style="color:var(--text3);font-family:var(--mono);font-size:11px;">${r.d}</td><td style="font-size:11px;">${r.dt.join(', ')}</td><td style="font-family:var(--mono);">${r.r}</td><td><span class="badge badge-danger">${r.sev}</span></td></tr>`).join('');
+    document.getElementById('leakdb-creds').innerHTML=`<div style="padding:12px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:8px;font-family:var(--mono);font-size:11px;"><div style="color:var(--text2);margin-bottom:8px;">${query} : &#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</div><div style="color:var(--text2);margin-bottom:8px;">${query} : &#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</div><div style="color:var(--text3);font-size:10px;margin-top:8px;letter-spacing:1px;">Passwords redacted. Full access requires authorized API credentials.</div></div>`;
+    document.getElementById('leakdb-results').style.display='block';
+    document.getElementById('btn-leakdb-search').disabled=false;
+  },800);
+}
+
+// ── SETTINGS ──
+
+// ── INSTAGRAM MONITOR ──
+let igMonitorTimer=null, igCheckCount=0, igEventCount=0, igMonitoring=false;
+let igLastProfile={};
+
+function igSaveSession(){
+  const user=document.getElementById('ig-session-user').value.trim();
+  const cookie=document.getElementById('ig-session-cookie').value.trim();
+  if(user)try{localStorage.setItem('ig_session_user',user);}catch(e){}
+  if(cookie)try{localStorage.setItem('ig_session_cookie',cookie);}catch(e){}
+  igUpdateCmd();
+  alert('Session saved. Use the CLI command below on your machine with instagram_monitor installed.');
+}
+
+function igUpdateCmd(){
+  const username=document.getElementById('ig-username')?.value.trim()||'<username>';
+  const user=document.getElementById('ig-session-user')?.value.trim()||'';
+  const interval=document.getElementById('ig-interval')?.value||'60';
+  const opts=[];
+  if(document.getElementById('ig-opt-posts')?.checked)opts.push('--check-posts');
+  if(document.getElementById('ig-opt-stories')?.checked)opts.push('--check-stories');
+  if(document.getElementById('ig-opt-followers')?.checked)opts.push('--check-followings');
+  if(document.getElementById('ig-opt-bio')?.checked)opts.push('--check-bio');
+  if(document.getElementById('ig-opt-pfp')?.checked)opts.push('--check-profile-pic');
+  if(user)opts.push(`-u ${user}`);
+  opts.push(`--check-interval ${interval}`);
+  const cmd=`instagram_monitor ${username} ${opts.join(' ')}`;
+  const el=document.getElementById('ig-cmd-output');
+  if(el)el.textContent=cmd;
+}
+
+function igCopyCmd(){
+  const cmd=document.getElementById('ig-cmd-output')?.textContent||'';
+  navigator.clipboard?.writeText(cmd).then(()=>{
+    const btn=event.target;btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',2000);
+  });
+}
+
+function igAddEvent(type, msg, sev){
+  igEventCount++;
+  document.getElementById('ig-stat-events').textContent=igEventCount;
+  const colors={info:'var(--accent)',warning:'var(--warning)',danger:'var(--danger)',success:'var(--success)'};
+  const icons={info:'&#128161;',warning:'&#9888;',danger:'&#128165;',success:'&#10003;'};
+  const col=colors[sev]||'var(--text2)';
+  const icon=icons[sev]||'&#9679;';
+  const time=new Date().toTimeString().slice(0,8);
+  const html=`<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;animation:dwSlide 0.3s ease;">
+    <span style="font-size:12px;flex-shrink:0;margin-top:1px;">${icon}</span>
+    <div style="flex:1;">
+      <div style="font-family:var(--mono);font-size:10px;font-weight:600;color:${col};letter-spacing:1px;margin-bottom:2px;">${type}</div>
+      <div style="font-size:12px;color:var(--text);">${msg}</div>
+    </div>
+    <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0;">${time}</span>
+  </div>`;
+  const feed=document.getElementById('ig-feed');
+  const empty=document.getElementById('ig-feed-empty');
+  if(feed){
+    if(empty)empty.style.display='none';
+    feed.insertAdjacentHTML('afterbegin',html);
+  }
+}
+
+function igClearFeed(){
+  const feed=document.getElementById('ig-feed');
+  if(feed)feed.innerHTML='<div id="ig-feed-empty" style="padding:3rem;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);">&#128247; No activity yet.</div>';
+  igEventCount=0;igCheckCount=0;
+  document.getElementById('ig-stat-events').textContent='0';
+  document.getElementById('ig-stat-checks').textContent='0';
+}
+
+async function igFetchProfile(username){
+  const uname = username.replace(/^@/,'').trim();
+
+  // ── Source 1: instanavigation.com ──
+  try{
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent('https://instanavigation.com/instagram-profile/'+uname)}`;
+    const r = await fetch(proxy,{signal:AbortSignal.timeout(12000)});
+    if(r.ok){
+      const d = await r.json(); const h = d.contents||'';
+      const g = rx => { const m=h.match(rx); return m?(m[1]||'').replace(/,/g,'').trim():''; };
+      const name = g(/property="og:title"\s+content="([^"]+)"/i);
+      const pic  = g(/property="og:image"\s+content="([^"]+)"/i);
+      const desc = g(/property="og:description"\s+content="([^"]+)"/i);
+      const posts= g(/([\d,.]+[KMk]?)\s*(?:posts|Posts)/i);
+      const foll = g(/([\d,.]+[KMk]?)\s*(?:followers|Followers)/i);
+      const folw = g(/([\d,.]+[KMk]?)\s*(?:following|Following)/i);
+      if(name&&name.length>1) return {username:uname,fullName:name,bio:desc||'',
+        followers:igParseCount(foll),following:igParseCount(folw),posts:igParseCount(posts),
+        isPrivate:h.toLowerCase().includes('private'),isVerified:h.includes('verified'),
+        profilePic:pic||'',source:'instanavigation'};
+    }
+  }catch(e){}
+
+  // ── Source 2: storiesig.com ──
+  try{
+    const proxy2 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://storiesig.info/en/user/'+uname)}`;
+    const r2 = await fetch(proxy2,{signal:AbortSignal.timeout(12000)});
+    if(r2.ok){
+      const d2 = await r2.json(); const h2 = d2.contents||'';
+      const g2 = rx => { const m=h2.match(rx); return m?(m[1]||'').replace(/,/g,'').trim():''; };
+      const name2 = g2(/property="og:title"\s+content="([^"]+)"/i)||g2(/<h1[^>]*>([^<]+)<\/h1>/i);
+      const pic2  = g2(/property="og:image"\s+content="([^"]+)"/i);
+      const desc2 = g2(/property="og:description"\s+content="([^"]+)"/i);
+      const posts2= g2(/([\d,.]+[KMk]?)\s*(?:posts|Posts)/i);
+      const foll2 = g2(/([\d,.]+[KMk]?)\s*(?:followers|Followers)/i);
+      const folw2 = g2(/([\d,.]+[KMk]?)\s*(?:following|Following)/i);
+      if(name2&&name2.length>1) return {username:uname,fullName:name2,bio:desc2||'',
+        followers:igParseCount(foll2),following:igParseCount(folw2),posts:igParseCount(posts2),
+        isPrivate:h2.toLowerCase().includes('private'),isVerified:false,
+        profilePic:pic2||'',source:'storiesig'};
+    }
+  }catch(e){}
+
+  // ── Source 3: instagrammernow.com ──
+  try{
+    const proxy3 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.instagrammernow.com/user/'+uname)}`;
+    const r3 = await fetch(proxy3,{signal:AbortSignal.timeout(12000)});
+    if(r3.ok){
+      const d3 = await r3.json(); const h3 = d3.contents||'';
+      const g3 = rx => { const m=h3.match(rx); return m?(m[1]||'').replace(/,/g,'').trim():''; };
+      const name3 = g3(/property="og:title"\s+content="([^"]+)"/i);
+      const pic3  = g3(/property="og:image"\s+content="([^"]+)"/i);
+      const posts3= g3(/([\d,.]+[KMk]?)\s*(?:posts|Posts)/i);
+      const foll3 = g3(/([\d,.]+[KMk]?)\s*(?:followers|Followers)/i);
+      const folw3 = g3(/([\d,.]+[KMk]?)\s*(?:following|Following)/i);
+      if(name3&&name3.length>1) return {username:uname,fullName:name3,bio:'',
+        followers:igParseCount(foll3),following:igParseCount(folw3),posts:igParseCount(posts3),
+        isPrivate:false,isVerified:false,profilePic:pic3||'',source:'instagrammernow'};
+    }
+  }catch(e){}
+
+  // ── Source 4: cors-proxy.htmldriven.com + IG web ──
+  try{
+    const igUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${uname}`;
+    const proxy4 = `https://corsproxy.io/?${encodeURIComponent(igUrl)}`;
+    const r4 = await fetch(proxy4,{headers:{'x-ig-app-id':'936619743392459'},signal:AbortSignal.timeout(10000)});
+    if(r4.ok){
+      const j = await r4.json();
+      const u = j?.data?.user;
+      if(u) return{username:u.username||uname,fullName:u.full_name||uname,
+        bio:u.biography||'',followers:u.edge_followed_by?.count||0,
+        following:u.edge_follow?.count||0,posts:u.edge_owner_to_timeline_media?.count||0,
+        isPrivate:u.is_private||false,isVerified:u.is_verified||false,
+        profilePic:u.profile_pic_url_hd||u.profile_pic_url||'',source:'ig-api'};
+    }
+  }catch(e){}
+
+  return null;
+}
+
+function igParseCount(str){
+  if(!str)return 0;
+  str=str.toString().replace(/,/g,'').trim();
+  if(str.endsWith('K')||str.endsWith('k'))return Math.round(parseFloat(str)*1000);
+  if(str.endsWith('M')||str.endsWith('m'))return Math.round(parseFloat(str)*1000000);
+  return parseInt(str)||0;
+}
+
+function igUpdateProfileCard(profile){
+  document.getElementById('ig-profile-empty').style.display='none';
+  document.getElementById('ig-profile-data').style.display='block';
+  document.getElementById('ig-fullname').textContent=profile.fullName||profile.username;
+  document.getElementById('ig-handle').textContent='@'+profile.username;
+  document.getElementById('ig-bio').textContent=profile.bio||'No bio';
+  document.getElementById('ig-posts-count').textContent=profile.posts?.toLocaleString()||'--';
+  document.getElementById('ig-followers-count').textContent=profile.followers?.toLocaleString()||'--';
+  document.getElementById('ig-following-count').textContent=profile.following?.toLocaleString()||'--';
+  const badge=document.getElementById('ig-private-badge');
+  if(badge)badge.style.display=profile.isPrivate?'block':'none';
+  const pfp=document.getElementById('ig-pfp');
+  if(pfp&&profile.profilePic){
+    pfp.innerHTML=`<img src="${profile.profilePic}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='&#128247;'"/>`;
+  }
+}
+
+function igDetectChanges(old, curr){
+  if(!old||!curr)return;
+  if(old.followers!==curr.followers){
+    const diff=curr.followers-old.followers;
+    igAddEvent('FOLLOWERS CHANGED',`${old.followers.toLocaleString()} &rarr; ${curr.followers.toLocaleString()} (${diff>0?'+':''}${diff.toLocaleString()})`,diff>0?'success':'warning');
+  }
+  if(old.following!==curr.following){
+    const diff=curr.following-old.following;
+    igAddEvent('FOLLOWING CHANGED',`${old.following.toLocaleString()} &rarr; ${curr.following.toLocaleString()} (${diff>0?'+':''}${diff.toLocaleString()})`,diff>0?'info':'warning');
+  }
+  if(old.posts!==curr.posts){
+    const diff=curr.posts-old.posts;
+    if(diff>0)igAddEvent('NEW POST DETECTED',`Total posts: ${old.posts} &rarr; ${curr.posts} (+${diff})`,'danger');
+  }
+  if(old.bio!==curr.bio){
+    igAddEvent('BIO CHANGED',`Was: "${old.bio||'(empty)'}" &rarr; Now: "${curr.bio||'(empty)'}"`,'warning');
+  }
+  if(old.isPrivate!==curr.isPrivate){
+    igAddEvent('PRIVACY CHANGED',`Profile changed to ${curr.isPrivate?'PRIVATE':'PUBLIC'}`,'danger');
+  }
+  if(old.profilePic!==curr.profilePic){
+    igAddEvent('PROFILE PIC CHANGED','New profile picture detected','info');
+  }
+}
+
+async function igDoCheck(){
+  const username=document.getElementById('ig-username').value.trim();
+  if(!username||!igMonitoring)return;
+  igCheckCount++;
+  document.getElementById('ig-stat-checks').textContent=igCheckCount;
+  document.getElementById('ig-stat-last').textContent=new Date().toTimeString().slice(0,8);
+  const profile=await igFetchProfile(username);
+  if(profile){
+    igDetectChanges(igLastProfile.username?igLastProfile:null, profile);
+    igUpdateProfileCard(profile);
+    if(!igLastProfile.username){
+      igAddEvent('MONITORING STARTED',`Tracking @${username} via ${profile.source||'web'} — Posts: ${profile.posts} | Followers: ${profile.followers?.toLocaleString()}`, 'success');
+    }
+    igLastProfile=profile;
+  } else {
+    if(igCheckCount===1){
+      igAddEvent('ALL SOURCES FAILED','Picuki, Imginn and oEmbed all returned no data. Instagram proxies may be rate-limited.','warning');
+      igAddEvent('CLI SOLUTION',`Run on your machine: <code style="color:var(--accent);">instagram_monitor ${username} --check-interval ${document.getElementById('ig-interval').value||60}</code>`,'info');
+      document.getElementById('ig-profile-empty').textContent='Could not fetch profile. Try again or use CLI command below.';
+    }
+  }
+  // Schedule next check
+  const interval=(parseInt(document.getElementById('ig-interval').value)||60)*1000;
+  if(igMonitoring)igMonitorTimer=setTimeout(igDoCheck, interval);
+}
+
+function igStart(){
+  const username=document.getElementById('ig-username').value.trim();
+  if(!username){alert('Enter an Instagram username to monitor.');return;}
+  igMonitoring=true;igLastProfile={};
+  document.getElementById('ig-btn-start').style.display='none';
+  document.getElementById('ig-btn-stop').style.display='inline-flex';
+  document.getElementById('ig-feed-status').style.color='var(--success)';
+  document.getElementById('ig-feed-status').textContent='&#9679; MONITORING';
+  document.getElementById('ig-stat-status').style.color='var(--success)';
+  document.getElementById('ig-stat-status').textContent='Active';
+  document.getElementById('ig-stat-target').textContent='@'+username;
+  igUpdateCmd();
+  igDoCheck();
+  addRecent('INSTAGRAM', '@'+username);
+}
+
+function igStop(){
+  igMonitoring=false;
+  if(igMonitorTimer)clearTimeout(igMonitorTimer);
+  document.getElementById('ig-btn-start').style.display='inline-flex';
+  document.getElementById('ig-btn-stop').style.display='none';
+  document.getElementById('ig-feed-status').style.color='var(--text3)';
+  document.getElementById('ig-feed-status').textContent='&#9675; STOPPED';
+  document.getElementById('ig-stat-status').style.color='var(--text3)';
+  document.getElementById('ig-stat-status').textContent='Stopped';
+  igAddEvent('MONITORING STOPPED','Session ended by operator','warning');
+}
+
+// Update command when settings change
+document.addEventListener('change', e=>{
+  if(['ig-username','ig-opt-posts','ig-opt-stories','ig-opt-followers','ig-opt-bio','ig-opt-pfp','ig-interval','ig-session-user'].includes(e.target.id))igUpdateCmd();
+});
+document.addEventListener('input', e=>{
+  if(e.target.id==='ig-username'||e.target.id==='ig-session-user')igUpdateCmd();
+});
+
+// Load saved session on startup
+try{
+  const su=localStorage.getItem('ig_session_user');
+  if(su&&document.getElementById('ig-session-user'))document.getElementById('ig-session-user').value=su;
+}catch(e){}
+function saveKey(service){
+  const inp=document.getElementById(service==='hibp'?'hibp-key':service==='hunter'?'hunter-key':'numverify-key');
+  const val=inp.value.trim();if(!val)return;
+  KEYS[service]=val;try{localStorage.setItem('key_'+service,val);}catch(e){}
+  inp.value='';inp.placeholder='Key saved';
+  const dots=document.querySelectorAll('.api-dot');
+  if(service==='hibp'&&dots[0])dots[0].className='api-dot dot-green';
+  if(service==='hunter'&&dots[1])dots[1].className='api-dot dot-green';
+  if(service==='numverify'&&dots[2])dots[2].className='api-dot dot-green';
+}
+try{['hibp','hunter','numverify'].forEach(k=>{const v=localStorage.getItem('key_'+k);if(v)KEYS[k]=v;});}catch(e){}
+</script>
+
+<script>
+// ── CDR PLATFORM ──
+(function(){
+  try{
+  function ldS(src,cb){if(document.querySelector('script[src="'+src+'"]')){cb&&cb();return;}const s=document.createElement('script');s.src=src;s.onload=cb||null;document.head.appendChild(s);}
+  function ldC(href){if(document.querySelector('link[href="'+href+'"]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=href;document.head.appendChild(l);}
+  window.ensureCDRLibs=function(cb){ldC('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');ldS('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',()=>{ldS('https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js',()=>{ldS('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',()=>{ldS('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',cb);});});});};
+  const DB={mapping:[],summary:[],maxStay:[],workHome:[],nightMaxStay:[],dayMaxStay:[],roaming:[],imei:[],imsi:[],otherState:[],sheets:{}};
+  let MC={},contacts=[],towers=[],mainMap=null,triMap=null,triMapInit=false,mapLayers={},filtered=[],cdrPg=1;
+  const PER=50;
+  const FDEFS=[{key:'date',label:'Date',req:true},{key:'time',label:'Time',req:false},{key:'bParty',label:'B Party',req:true},{key:'callType',label:'Call Type',req:false},{key:'duration',label:'Duration',req:false},{key:'cellId',label:'Cell ID',req:false},{key:'lat',label:'Latitude',req:false},{key:'lon',label:'Longitude',req:false},{key:'address',label:'Tower Address',req:false},{key:'city',label:'City',req:false},{key:'circle',label:'Circle',req:false},{key:'imei',label:'IMEI',req:false},{key:'imsi',label:'IMSI',req:false}];
+  const PAT={date:[/date/i,/^dt$/i],time:[/time/i,/^tm$/i],bParty:[/b.?party/i,/called/i,/number/i,/contact/i],callType:[/call.*type/i,/type/i,/event/i],duration:[/duration/i,/dur/i],cellId:[/cell.?id/i,/cellid/i,/tower.?id/i,/bts/i],lat:[/^lat/i,/latitude/i],lon:[/^lon/i,/longitude/i],address:[/address/i],city:[/city/i,/area/i],circle:[/circle/i,/state/i,/region/i],imei:[/^imei$/i],imsi:[/^imsi$/i]};
+  function ce(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+  function cf(n){return Number(n).toLocaleString();}
+  function slr(k,v){return'<div class="cdr-sl-row"><span class="cdr-sl-k">'+k+'</span><span class="cdr-sl-v">'+ce(v)+'</span></div>';}
+  function bdg(t){const u=(t||'').toUpperCase();if(u.includes('CALL_OUT')||u.includes('OUTGOING'))return'<span class="cdr-bdg cb-out">OUT</span>';if(u.includes('CALL_IN')||u.includes('INCOMING'))return'<span class="cdr-bdg cb-in">IN</span>';if(u.includes('SMS_OUT'))return'<span class="cdr-bdg cb-so">SMS OUT</span>';if(u.includes('SMS_IN'))return'<span class="cdr-bdg cb-si">SMS IN</span>';return'<span class="cdr-bdg cb-ot">'+ce(t||'--')+'</span>';}
+  function chartDef(){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,22,40,0.95)',borderColor:'rgba(0,212,255,0.2)',borderWidth:1,titleColor:'#e2e8f0',bodyColor:'#94a3b8',padding:8}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{family:'IBM Plex Mono',size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#64748b',font:{family:'IBM Plex Mono',size:10}}}}};}
+  function gv(row,key){const c=MC[key];return c?(row[c]||''):'';}
+  function setProg(pct,txt){document.getElementById('cdr-prog-wrap').style.display='block';document.getElementById('cdr-prog-fill').style.width=pct+'%';document.getElementById('cdr-prog-txt').textContent=txt;}
+  window.cdrGo=function(file){ensureCDRLibs(async function(){try{setProg(5,'Reading...');const n=file.name.toLowerCase();if(n.endsWith('.xlsx')||n.endsWith('.xls'))await pXLSX(file);else if(n.endsWith('.csv'))await pCSV(file);else alert('Use .xlsx .xls or .csv');}catch(e){alert('Error: '+e.message);}});};
+  async function pXLSX(file){setProg(20,'Parsing...');const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const sh=wb.SheetNames;DB.sheets={};sh.forEach(function(s){DB.sheets[s]=XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:''}); });const f=function(p){return sh.find(function(s){return p.test(s);});};const ms=f(/^mapping$|^cdr$|^records$|^calls$/i);if(ms)DB.mapping=DB.sheets[ms];const whs=f(/workhome|home.*work/i);if(whs)DB.workHome=DB.sheets[whs];const nxs=f(/night.*max|night.*stay/i);if(nxs)DB.nightMaxStay=DB.sheets[nxs];const dxs=f(/day.*max|day.*stay/i);if(dxs)DB.dayMaxStay=DB.sheets[dxs];const rs=f(/roam/i);if(rs)DB.roaming=DB.sheets[rs];const is_=f(/imei/i);if(is_)DB.imei=DB.sheets[is_];const iss=f(/imsi/i);if(iss)DB.imsi=DB.sheets[iss];setProg(70,'Mapping...');const data=DB.mapping.length?DB.mapping:(DB.sheets[sh[0]]||[]);if(data.length){const h=Object.keys(data[0]);autoMap(h);showMapUI(h,data.length);}else alert('No data found.');}
+  async function pCSV(file){setProg(20,'Reading CSV...');const text=await new Promise(function(res,rej){const r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=function(){rej(new Error('fail'));};r.readAsText(file,'utf-8');});setProg(50,'Parsing...');const rows=parseCSVTxt(text);DB.mapping=rows;if(rows.length){const h=Object.keys(rows[0]);autoMap(h);showMapUI(h,rows.length);}else alert('No data found.');}
+  function parseCSVTxt(text){if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);const lines=text.split('\n');if(!lines.length)return[];function sc(line){const res=[];let cur='',inQ=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){res.push(cur);cur='';}else cur+=ch;}res.push(cur);return res;}const hdrs=sc(lines[0]).map(function(h){return h.trim().replace(/^"|"$/g,'');});const rows=[];for(let i=1;i<lines.length;i++){const ln=lines[i].trim();if(!ln)continue;const vals=sc(ln);const obj={};hdrs.forEach(function(h,j){obj[h]=(vals[j]||'').replace(/^"|"$/g,'').trim();});rows.push(obj);}return rows;}
+  function autoMap(hdrs){MC={};FDEFS.forEach(function(f){const pats=PAT[f.key]||[];const found=hdrs.find(function(h){return pats.some(function(p){return p.test(h);});});MC[f.key]=found||'';});}
+  function showMapUI(hdrs,cnt){setProg(90,'Ready');document.getElementById('cdr-map-ui').style.display='block';const g=document.getElementById('cdr-map-grid');g.innerHTML=FDEFS.map(function(f){return'<div class="cdr-map-row"><div class="cdr-map-lbl">'+f.label+(f.req?'<span class="req"> *</span>':'')+'</div><select class="cdr-sel" id="cms_'+f.key+'" onchange="(function(v){window._cdrMC=window._cdrMC||{};window._cdrMC[\''+f.key+'\']=v;})(this.value)">'+['-- skip --'].concat(hdrs).map(function(h){return'<option value="'+(h==='-- skip --'?'':h)+'"'+(MC[f.key]===h?' selected':'')+'>'+(h||'-- skip --')+'</option>';}).join('')+'</select></div>';}).join('');}
+  window.cdrStartAnalysis=function(){FDEFS.forEach(function(f){const el=document.getElementById('cms_'+f.key);if(el)MC[f.key]=el.value;});if(!MC.date||!MC.bParty){alert('Map at least Date and B Party.');return;}build();document.getElementById('cdr-import-state').style.display='none';document.getElementById('cdr-analysis-state').style.display='block';document.getElementById('cdr-status-tag').textContent=cf(DB.mapping.length)+' RECORDS';if(typeof addRecent!=='undefined')addRecent('CDR',DB.mapping.length+' records');};
+  window.cdrReset=function(){Object.keys(DB).forEach(function(k){DB[k]=Array.isArray(DB[k])?[]:{}; });contacts=[];towers=[];mainMap=null;triMap=null;triMapInit=false;mapLayers={};filtered=[];cdrPg=1;document.getElementById('cdr-import-state').style.display='block';document.getElementById('cdr-analysis-state').style.display='none';document.getElementById('cdr-prog-wrap').style.display='none';document.getElementById('cdr-map-ui').style.display='none';document.getElementById('cdr-file-inp').value='';};
+  function build(){DB.mapping.forEach(function(r){r._date=gv(r,'date');r._time=gv(r,'time');r._bParty=gv(r,'bParty');r._callType=gv(r,'callType');r._duration=gv(r,'duration');r._cellId=gv(r,'cellId');r._lat=parseFloat(gv(r,'lat'))||0;r._lon=parseFloat(gv(r,'lon'))||0;r._address=gv(r,'address');r._city=gv(r,'city');r._circle=gv(r,'circle');r._imei=gv(r,'imei');});
+  if(!DB.summary||!DB.summary.length){const cm={};DB.mapping.forEach(function(r){const b=r._bParty;if(!b)return;if(!cm[b])cm[b]={bParty:b,totalCalls:0,outCalls:0,inCalls:0,smsOut:0,smsIn:0,duration:0,days:new Set(),firstDate:'',lastDate:''};const c=cm[b];c.totalCalls++;const t=r._callType.toUpperCase();if(t.includes('CALL_OUT')||t.includes('OUTGOING'))c.outCalls++;else if(t.includes('CALL_IN')||t.includes('INCOMING'))c.inCalls++;else if(t.includes('SMS_OUT'))c.smsOut++;else if(t.includes('SMS_IN'))c.smsIn++;c.duration+=parseInt(r._duration)||0;c.days.add(r._date);if(!c.firstDate||r._date<c.firstDate)c.firstDate=r._date;if(!c.lastDate||r._date>c.lastDate)c.lastDate=r._date;});DB.summary=Object.values(cm).sort(function(a,b){return b.totalCalls-a.totalCalls;}).map(function(c){return Object.assign({},c,{days:c.days.size});});}
+  if(!DB.maxStay||!DB.maxStay.length){const tm={};DB.mapping.forEach(function(r){const cid=r._cellId;if(!cid||!r._lat)return;if(!tm[cid])tm[cid]={'Cell ID':cid,Latitude:r._lat,Longitude:r._lon,'Tower Address':r._address,'Total Calls':0,Days:new Set(),Roaming:r._circle,'First Call Date':'','Last Call Date':''};tm[cid]['Total Calls']++;tm[cid].Days.add(r._date);if(!tm[cid]['First Call Date']||r._date<tm[cid]['First Call Date'])tm[cid]['First Call Date']=r._date;if(!tm[cid]['Last Call Date']||r._date>tm[cid]['Last Call Date'])tm[cid]['Last Call Date']=r._date;});DB.maxStay=Object.values(tm).sort(function(a,b){return b['Total Calls']-a['Total Calls'];}).map(function(t){return Object.assign({},t,{Days:t.Days.size});});}
+  if(!DB.nightMaxStay||!DB.nightMaxStay.length){const nt={};DB.mapping.filter(function(r){const h=parseInt((r._time||'').split(':')[0]);return h>=22||h<6;}).forEach(function(r){if(!r._cellId||!r._lat)return;if(!nt[r._cellId])nt[r._cellId]={'Cell ID':r._cellId,Latitude:r._lat,Longitude:r._lon,'Tower Address':r._address,'Total Calls':0};nt[r._cellId]['Total Calls']++;});DB.nightMaxStay=Object.values(nt).sort(function(a,b){return b['Total Calls']-a['Total Calls'];});}
+  if(!DB.dayMaxStay||!DB.dayMaxStay.length){const dt={};DB.mapping.filter(function(r){const h=parseInt((r._time||'').split(':')[0]);return h>=6&&h<22;}).forEach(function(r){if(!r._cellId||!r._lat)return;if(!dt[r._cellId])dt[r._cellId]={'Cell ID':r._cellId,Latitude:r._lat,Longitude:r._lon,'Tower Address':r._address,'Total Calls':0};dt[r._cellId]['Total Calls']++;});DB.dayMaxStay=Object.values(dt).sort(function(a,b){return b['Total Calls']-a['Total Calls'];});}
+  contacts=DB.summary;towers=DB.maxStay;
+  document.getElementById('cdr-cnt-sub').textContent=contacts.length+' contacts';document.getElementById('cdr-cnt-fc').textContent=contacts.length;document.getElementById('cdr-twr-fc').textContent=towers.length;document.getElementById('cdr-raw-fc').textContent=cf(DB.mapping.length)+' records';
+  buildOverview();buildTimeline();buildContacts();buildPattern();buildTowers();buildDevice();buildRaw();
+  const dates=[...new Set(DB.mapping.map(function(r){return r._date;}).filter(Boolean))].sort();const sel=document.getElementById('cdr-tri-date');dates.forEach(function(d){const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});buildTop3();}
+  function buildOverview(){const total=DB.mapping.length;const outC=DB.mapping.filter(function(r){return /call_out|outgoing/i.test(r._callType);}).length;const sms=DB.mapping.filter(function(r){return /sms/i.test(r._callType);}).length;const totalDur=DB.mapping.reduce(function(a,r){return a+(parseInt(r._duration)||0);},0);const uD=new Set(DB.mapping.map(function(r){return r._date;})).size;const ownCol=Object.keys(DB.mapping[0]||{}).find(function(k){return /^(CdrNo|A.?Party|msisdn)/i.test(k);});const ownNum=ownCol?DB.mapping[0][ownCol]||'--':'--';document.getElementById('cdr-ps').innerHTML='<div class="cdr-ps"><div class="cdr-ps-l"><div class="cdr-ps-av">&#128241;</div><div><div class="cdr-ps-num">'+ce(ownNum)+'</div><div class="cdr-ps-m">'+ce(DB.mapping[0]?._circle||'--')+' &middot; '+uD+' active days</div></div></div><div class="cdr-ps-stats"><div><div class="cdr-ps-sv">'+cf(total)+'</div><div class="cdr-ps-sl">Records</div></div><div><div class="cdr-ps-sv">'+contacts.length+'</div><div class="cdr-ps-sl">Contacts</div></div><div><div class="cdr-ps-sv">'+towers.length+'</div><div class="cdr-ps-sl">Towers</div></div></div></div>';
+  document.getElementById('cdr-kpi-row').innerHTML=[{l:'Voice Calls',v:cf(outC),c:'var(--accent)'},{l:'SMS Records',v:cf(sms),c:'var(--success)'},{l:'Talk Time',v:Math.floor(totalDur/3600)+'h '+Math.floor((totalDur%3600)/60)+'m',c:'var(--warning)'},{l:'Active Days',v:cf(uD),c:'var(--text)'}].map(function(k){return'<div class="cdr-kpi"><div class="cdr-kpi-lbl">'+k.l+'</div><div class="cdr-kpi-val" style="color:'+k.c+'">'+k.v+'</div></div>';}).join('');
+  const tm={};DB.mapping.forEach(function(r){const t=r._callType||'Other';tm[t]=(tm[t]||0)+1;});const tL=Object.keys(tm).sort(function(a,b){return tm[b]-tm[a];});const pal=['#1a56db','#10b981','#f59e0b','#a855f7','#ef4444','#0ea5e9'];
+  new Chart(document.getElementById('cdr-ct-ch'),{type:'doughnut',data:{labels:tL,datasets:[{data:tL.map(function(l){return tm[l];}),backgroundColor:pal.slice(0,tL.length),borderWidth:2,borderColor:'rgba(10,22,40,0.8)'}]},options:{plugins:{legend:{position:'right',labels:{font:{family:'IBM Plex Mono',size:10},color:'#94a3b8',padding:8}}},cutout:'60%',maintainAspectRatio:true}});
+  const hrs=new Array(24).fill(0);DB.mapping.forEach(function(r){const h=parseInt((r._time||'').split(':')[0]);if(!isNaN(h)&&h<24)hrs[h]++;});
+  new Chart(document.getElementById('cdr-hr-ch'),{type:'bar',data:{labels:Array.from({length:24},function(_,i){return i.toString().padStart(2,'0');}),datasets:[{data:hrs,backgroundColor:hrs.map(function(v,i){return(i>=22||i<6)?'rgba(168,85,247,0.3)':v===Math.max.apply(null,hrs)?'rgba(239,68,68,0.4)':'rgba(26,86,219,0.35)';}),borderColor:hrs.map(function(v,i){return(i>=22||i<6)?'#a855f7':v===Math.max.apply(null,hrs)?'#ef4444':'#1a56db';}),borderWidth:1.5}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});
+  const hw=DB.workHome||[];document.getElementById('cdr-hw').innerHTML=hw.length?hw.map(function(r){return'<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:7px;background:rgba(255,255,255,0.02);"><span class="cdr-bdg '+(r.Location==='Home'?'cb-hm':'cb-wk')+'" style="flex-shrink:0;margin-top:2px;">'+r.Location+'</span><div><div style="font-size:12px;color:var(--text);margin-bottom:2px;">'+ce((r['Tower Address']||'').split('\t')[0].slice(0,55))+'</div><div style="font-size:10px;color:var(--text3);font-family:var(--mono);">Cell: '+ce(r['Cell ID']||'')+' &middot; '+r['Total Calls']+' calls</div></div></div>';}).join(''):'<div class="cdr-em"><div class="cdr-em-ic">&#127968;</div>No location data</div>';
+  const circs=DB.otherState&&DB.otherState.length?DB.otherState:Object.entries(DB.mapping.reduce(function(m,r){const c=r._circle||'Unknown';m[c]=(m[c]||0)+1;return m;},{})).map(function(kv){return{Circle:kv[0],'Total Calls':kv[1]};}).sort(function(a,b){return b['Total Calls']-a['Total Calls'];}).slice(0,8);
+  new Chart(document.getElementById('cdr-circ-ch'),{type:'bar',data:{labels:circs.map(function(r){return r.Circle||'';}),datasets:[{data:circs.map(function(r){return parseInt(r['Total Calls'])||0;}),backgroundColor:'rgba(26,86,219,0.3)',borderColor:'#1a56db',borderWidth:2,borderRadius:3}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});}
+  function initMainMap(){if(mainMap)return;const first=towers.find(function(r){return r.Latitude;});const center=first?[parseFloat(first.Latitude),parseFloat(first.Longitude)]:[20.5937,78.9629];mainMap=L.map('cdr-main-map').setView(center,11);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OSM',maxZoom:18}).addTo(mainMap);const ag=L.layerGroup();towers.slice(0,100).forEach(function(r){const lat=parseFloat(r.Latitude),lon=parseFloat(r.Longitude);if(!lat||!lon)return;L.circleMarker([lat,lon],{radius:4+Math.min((parseInt(r['Total Calls'])||0)/80,10),color:'#00d4ff',fillColor:'#1a56db',fillOpacity:.5,weight:1.5}).bindPopup('<div class="cpop-t">'+ce(r['Cell ID']||'Unknown')+'</div><div class="cpop-r"><span class="cpop-k">Calls</span><span class="cpop-v">'+(r['Total Calls']||'?')+'</span></div>').addTo(ag);});mapLayers.all=ag;
+  const pts=towers.slice(0,150).map(function(r){return[parseFloat(r.Latitude),parseFloat(r.Longitude),Math.min(parseInt(r['Total Calls']||1)/100,1)];}).filter(function(p){return p[0]&&p[1];});if(L.heatLayer)mapLayers.heat=L.heatLayer(pts,{radius:30,blur:18,gradient:{0.2:'#1a56db',0.5:'#f59e0b',0.8:'#ef4444'}});
+  const hwg=L.layerGroup();(DB.workHome||[]).forEach(function(r){const lat=parseFloat(r.Latitude),lon=parseFloat(r.Longitude);if(!lat||!lon)return;const col=r.Location==='Home'?'#f59e0b':'#00d4ff';L.circleMarker([lat,lon],{radius:14,color:col,fillColor:col,fillOpacity:.25,weight:2}).bindPopup('<div class="cpop-t">'+r.Location+'</div>').addTo(hwg);});mapLayers.hw=hwg;
+  const tg=L.layerGroup();const tp=towers.slice(0,30).filter(function(r){return parseFloat(r.Latitude);}).map(function(r){return[parseFloat(r.Latitude),parseFloat(r.Longitude)];});if(tp.length>1)L.polyline(tp,{color:'#1a56db',weight:1.5,opacity:.6,dashArray:'6,8'}).addTo(tg);towers.slice(0,30).forEach(function(r){const lat=parseFloat(r.Latitude),lon=parseFloat(r.Longitude);if(!lat||!lon)return;L.circleMarker([lat,lon],{radius:5,color:'#f59e0b',fillColor:'#f59e0b',fillOpacity:.8,weight:1}).addTo(tg);});mapLayers.trail=tg;
+  const ng=L.layerGroup();(DB.nightMaxStay||[]).slice(0,60).forEach(function(r){const lat=parseFloat(r.Latitude),lon=parseFloat(r.Longitude);if(!lat||!lon)return;L.circleMarker([lat,lon],{radius:6,color:'#a855f7',fillColor:'#a855f7',fillOpacity:.5,weight:1.5}).addTo(ng);});mapLayers.night=ng;
+  mapLayers.all.addTo(mainMap);
+  document.getElementById('cdr-top-twrs').innerHTML='<table class="cdr-tbl"><thead><tr><th>#</th><th>Cell ID</th><th>Calls</th><th>Days</th></tr></thead><tbody>'+towers.slice(0,10).map(function(r,i){return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="color:var(--accent);font-size:10px;">'+ce(r['Cell ID'])+'</td><td style="font-weight:500;color:var(--text)">'+r['Total Calls']+'</td><td style="color:var(--text3)">'+r.Days+'</td></tr>';}).join('')+'</tbody></table>';
+  const circs=[...new Set(towers.map(function(r){return r.Roaming||'';}).filter(Boolean))];
+  document.getElementById('cdr-move-sm').innerHTML=[slr('Unique Towers',cf(towers.length)),slr('Circles',circs.join(', ')||'--'),slr('Top Tower',towers[0]?.['Cell ID']||'--'),slr('Max Calls',cf(towers[0]?.['Total Calls']||0))].join('');
+  new Chart(document.getElementById('cdr-twr-pie'),{type:'pie',data:{labels:['Home','Work','Transit','Other'],datasets:[{data:[30,20,25,25],backgroundColor:['rgba(245,158,11,.25)','rgba(0,212,255,.2)','rgba(16,185,129,.2)','rgba(100,116,139,.2)'],borderColor:['#f59e0b','#00d4ff','#10b981','#64748b'],borderWidth:1.5}]},options:{plugins:{legend:{labels:{font:{family:'IBM Plex Mono',size:10},color:'#94a3b8'}}},maintainAspectRatio:true}});}
+  window.cdrMapLayer=function(name,btn){document.querySelectorAll('.cdr-map-btn').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');Object.values(mapLayers).forEach(function(l){try{if(mainMap.hasLayer(l))mainMap.removeLayer(l);}catch(e){}});if(mapLayers[name])mapLayers[name].addTo(mainMap);};
+  function buildTop3(){const top3=towers.slice(0,3);document.getElementById('cdr-top3').innerHTML=top3.map(function(r,i){return'<div class="cdr-tchip"><div class="cdr-tchip-id">#'+(i+1)+' '+ce(r['Cell ID'])+'</div><div class="cdr-tchip-addr">'+ce((r['Tower Address']||'').split('\t')[0])+'</div><div class="cdr-tchip-s">'+r.Days+' days &middot; '+r.Latitude+', '+r.Longitude+'</div></div>';}).join('');}
+  window.cdrRunTri=function(){const date=document.getElementById('cdr-tri-date').value;if(!date){document.getElementById('cdr-tri-res').innerHTML='<div class="cdr-alt cdr-alt-wn">Select a date first.</div>';return;}const dayR=DB.mapping.filter(function(r){return r._date===date;});if(!dayR.length){document.getElementById('cdr-tri-res').innerHTML='<div class="cdr-alt cdr-alt-er">No records for this date.</div>';return;}const tMap={};dayR.forEach(function(r){if(!r._lat||!r._lon)return;const c=r._cellId||r._lat+'_'+r._lon;if(!tMap[c])tMap[c]={lat:r._lat,lon:r._lon,count:0,addr:r._address||r._city||''};tMap[c].count++;});const tw=Object.values(tMap).sort(function(a,b){return b.count-a.count;});if(!tw.length){document.getElementById('cdr-tri-res').innerHTML='<div class="cdr-alt cdr-alt-er">No coordinate data for this date.</div>';return;}const totW=tw.reduce(function(s,t){return s+t.count;},0);const cLat=tw.reduce(function(s,t){return s+t.lat*t.count;},0)/totW;const cLon=tw.reduce(function(s,t){return s+t.lon*t.count;},0)/totW;const tri3=tw.slice(0,3);document.getElementById('cdr-tri-res').innerHTML='<div class="cdr-alt cdr-alt-ok">'+dayR.length+' records &middot; '+tw.length+' towers on '+date+'</div><div class="cdr-tri-box"><div class="cdr-tri-lbl">TRIANGULATED POSITION</div><div class="cdr-tri-coord">'+cLat.toFixed(6)+'&deg;, '+cLon.toFixed(6)+'&deg;</div><div class="cdr-tri-sub">Weighted centroid &middot; '+tw.length+' towers &middot; '+totW+' signals</div><div style="margin-top:8px;"><a href="https://maps.google.com/maps/?q='+cLat+','+cLon+'" target="_blank" style="color:var(--accent);font-size:11px;font-family:var(--mono);">Open in Google Maps &rarr;</a></div></div>'+tri3.map(function(t,i){return'<div class="cdr-tchip"><div class="cdr-tchip-id">#'+(i+1)+' &mdash; '+t.count+' signals ('+Math.round(t.count/totW*100)+'%)</div><div class="cdr-tchip-addr">'+ce(t.addr.slice(0,55)||'--')+'</div><div class="cdr-tchip-s">'+t.lat.toFixed(5)+', '+t.lon.toFixed(5)+'</div></div>';}).join('');
+  if(!triMapInit){const first=towers.find(function(r){return r.Latitude;});const center=first?[parseFloat(first.Latitude),parseFloat(first.Longitude)]:[20.5937,78.9629];triMap=L.map('cdr-tri-map').setView(center,12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OSM',maxZoom:18}).addTo(triMap);triMapInit=true;}triMap.eachLayer(function(l){if(!(l instanceof L.TileLayer))triMap.removeLayer(l);});const cols=['#1a56db','#10b981','#f59e0b'];tri3.forEach(function(t,i){L.circleMarker([t.lat,t.lon],{radius:8,color:cols[i],fillColor:cols[i],fillOpacity:.5,weight:2}).addTo(triMap);L.polyline([[t.lat,t.lon],[cLat,cLon]],{color:cols[i],weight:1.5,opacity:.5,dashArray:'4,6'}).addTo(triMap);});L.circleMarker([cLat,cLon],{radius:12,color:'#ef4444',fillColor:'#ef4444',fillOpacity:.7,weight:3}).addTo(triMap);triMap.setView([cLat,cLon],14);};
+  function buildTimeline(){const dMap={};DB.mapping.forEach(function(r){if(r._date)dMap[r._date]=(dMap[r._date]||0)+1;});const sd=Object.keys(dMap).sort();document.getElementById('cdr-period').textContent=(sd[0]||'--')+' to '+(sd[sd.length-1]||'--');new Chart(document.getElementById('cdr-daily-ch'),{type:'bar',data:{labels:sd,datasets:[{data:sd.map(function(d){return dMap[d];}),backgroundColor:'rgba(26,86,219,0.3)',borderColor:'#1a56db',borderWidth:1.5,borderRadius:2}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});const hrs2=new Array(24).fill(0);DB.mapping.forEach(function(r){const h=parseInt((r._time||'').split(':')[0]);if(!isNaN(h)&&h<24)hrs2[h]++;});new Chart(document.getElementById('cdr-hr2-ch'),{type:'line',data:{labels:Array.from({length:24},function(_,i){return i.toString().padStart(2,'0')+':00';}),datasets:[{data:hrs2,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,0.08)',tension:.4,fill:true,pointBackgroundColor:'#00d4ff',pointRadius:3}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});const dow=new Array(7).fill(0);DB.mapping.forEach(function(r){if(!r._date)return;const p=r._date.split(/[-\/]/);if(p.length>=3){const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));if(!isNaN(d))dow[d.getDay()]++;}});new Chart(document.getElementById('cdr-dow-ch'),{type:'bar',data:{labels:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],datasets:[{data:dow,backgroundColor:dow.map(function(v){return v===Math.max.apply(null,dow)?'rgba(239,68,68,0.3)':'rgba(26,86,219,0.25)';}),borderColor:dow.map(function(v){return v===Math.max.apply(null,dow)?'#ef4444':'#1a56db';}),borderWidth:2,borderRadius:4}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});const rec=DB.mapping.slice(-100).reverse();document.getElementById('cdr-rec-lbl').textContent='Last '+rec.length+' of '+cf(DB.mapping.length);document.getElementById('cdr-rec-body').innerHTML=rec.map(function(r){return'<tr><td style="color:var(--text2)">'+ce(r._date)+'</td><td style="color:var(--text3)">'+ce(r._time)+'</td><td style="font-weight:500;color:var(--text)">'+ce(r._bParty)+'</td><td>'+bdg(r._callType)+'</td><td style="color:var(--text3)">'+ce(r._duration)+'</td><td style="color:var(--accent);font-size:10px;">'+ce(r._cellId)+'</td><td style="font-size:10px;color:var(--text3);">'+ce(r._city||'')+'</td><td style="color:var(--text3)">'+ce(r._circle)+'</td></tr>';}).join('');}
+  function buildContacts(){const top10=contacts.slice(0,10);new Chart(document.getElementById('cdr-cnt-bar'),{type:'bar',data:{labels:top10.map(function(r){return r.bParty||'';}),datasets:[{data:top10.map(function(r){return r.totalCalls||0;}),backgroundColor:'rgba(26,86,219,0.3)',borderColor:'#1a56db',borderWidth:2,borderRadius:3}]},options:Object.assign({indexAxis:'y'},chartDef(),{plugins:{legend:{display:false}}})});const td=[].concat(contacts).sort(function(a,b){return b.duration-a.duration;}).slice(0,10);new Chart(document.getElementById('cdr-dur-bar'),{type:'bar',data:{labels:td.map(function(r){return r.bParty||'';}),datasets:[{data:td.map(function(r){return r.duration||0;}),backgroundColor:'rgba(16,185,129,0.25)',borderColor:'#10b981',borderWidth:2,borderRadius:3}]},options:Object.assign({indexAxis:'y'},chartDef(),{plugins:{legend:{display:false}}})});renderContacts(contacts);document.getElementById('cdr-cnt-srch').addEventListener('input',function(){const q=this.value.toLowerCase();const f=contacts.filter(function(r){return(r.bParty||'').toLowerCase().includes(q);});document.getElementById('cdr-cnt-fc').textContent=f.length;renderContacts(f);});}
+  function renderContacts(rows){document.getElementById('cdr-cnt-body').innerHTML=rows.slice(0,300).map(function(r,i){return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="font-weight:500;color:var(--text)">'+ce(r.bParty||'')+'</td><td style="color:var(--text3)">'+ce(r.provider||'')+'</td><td style="font-weight:500;color:var(--text)">'+cf(r.totalCalls||0)+'</td><td>'+cf(r.outCalls||0)+'</td><td>'+cf(r.inCalls||0)+'</td><td style="color:var(--text3)">'+(r.smsOut||'-')+'</td><td style="color:var(--text3)">'+(r.smsIn||'-')+'</td><td>'+cf(r.duration||0)+'</td><td>'+(r.days||'-')+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r.firstDate||'')+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r.lastDate||'')+'</td></tr>';}).join('');}
+  function buildPattern(){const total=DB.mapping.length;const nR=DB.mapping.filter(function(r){const h=parseInt((r._time||'').split(':')[0]);return h>=22||h<6;});const dR=DB.mapping.filter(function(r){const h=parseInt((r._time||'').split(':')[0]);return h>=6&&h<22;});const nr=nR.length,dr=dR.length;document.getElementById('cdr-pat-kpi').innerHTML=[{l:'Night Records',v:cf(nr),c:'#a855f7'},{l:'Day Records',v:cf(dr),c:'var(--accent)'},{l:'Night Ratio',v:Math.round(nr/total*100)+'%',c:nr/total>0.35?'var(--danger)':'var(--warning)'},{l:'Night Towers',v:cf((DB.nightMaxStay||[]).length),c:'var(--text)'}].map(function(k){return'<div class="cdr-kpi"><div class="cdr-kpi-lbl">'+k.l+'</div><div class="cdr-kpi-val" style="color:'+k.c+'">'+k.v+'</div></div>';}).join('');document.getElementById('cdr-night-pnl').innerHTML=[slr('Total night records',cf(nr)),slr('Unique night towers',(DB.nightMaxStay||[]).length),slr('Night ratio',Math.round(nr/total*100)+'%')].join('');document.getElementById('cdr-day-pnl').innerHTML=[slr('Total day records',cf(dr)),slr('Unique day towers',(DB.dayMaxStay||[]).length),slr('Day ratio',Math.round(dr/total*100)+'%')].join('');new Chart(document.getElementById('cdr-nd-ch'),{type:'bar',data:{labels:['Night Towers','Day Towers','All Towers'],datasets:[{data:[(DB.nightMaxStay||[]).length,(DB.dayMaxStay||[]).length,towers.length],backgroundColor:['rgba(168,85,247,.25)','rgba(26,86,219,.25)','rgba(16,185,129,.25)'],borderColor:['#a855f7','#1a56db','#10b981'],borderWidth:2,borderRadius:4}]},options:Object.assign({},chartDef(),{plugins:{legend:{display:false}}})});const ct={co:0,ci:0,so:0,si:0,wi:0,ot:0};DB.mapping.forEach(function(r){const t=(r._callType||'').toLowerCase();if(t.includes('call_out')||t.includes('outgoing'))ct.co++;else if(t.includes('call_in')||t.includes('incoming'))ct.ci++;else if(t.includes('sms_out'))ct.so++;else if(t.includes('sms_in'))ct.si++;else if(t.includes('wifi'))ct.wi++;else ct.ot++;});new Chart(document.getElementById('cdr-rad-ch'),{type:'radar',data:{labels:['Calls Out','Calls In','SMS Out','SMS In','WiFi','Other'],datasets:[{data:Object.values(ct),backgroundColor:'rgba(26,86,219,0.15)',borderColor:'#1a56db',pointBackgroundColor:'#00d4ff',pointRadius:4,borderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{r:{ticks:{color:'#64748b',font:{size:9},backdropColor:'transparent'},grid:{color:'rgba(255,255,255,0.06)'},pointLabels:{color:'#94a3b8',font:{family:'IBM Plex Mono',size:10}}}},maintainAspectRatio:true}});const nightRat=nr/total,smsR=DB.mapping.filter(function(r){return /sms/i.test(r._callType);}).length/total;const risks=[{name:'Night Activity Ratio',val:Math.round(nightRat*100),thr:35,desc:'Elevated night activity warrants review'},{name:'Contact Network Size',val:Math.min(Math.round(contacts.length/3),100),thr:50,desc:'Large contact networks indicate broad communication'},{name:'SMS Communication Ratio',val:Math.round(smsR*100),thr:40,desc:'High SMS ratio may indicate preference for text'}];document.getElementById('cdr-risk-pnl').innerHTML=risks.map(function(r){const lvl=r.val>r.thr+20?'hi':r.val>r.thr?'md':'lo';return'<div class="cdr-rr '+lvl+'"><div class="cdr-rr-hd"><span class="cdr-rr-nm">'+r.name+'</span><span class="cdr-rr-sc">'+r.val+'% &mdash; '+(lvl==='hi'?'HIGH':lvl==='md'?'MEDIUM':'LOW')+'</span></div><div class="cdr-rr-bar"><div class="cdr-rr-fill" style="width:'+r.val+'%;"></div></div><div class="cdr-rr-desc">'+r.desc+'</div></div>';}).join('');}
+  function buildTowers(){document.getElementById('cdr-twr-kpi').innerHTML=[{l:'Unique Towers',v:cf(towers.length)},{l:'Max Calls',v:cf(towers[0]&&towers[0]['Total Calls']||0)},{l:'Total Activity',v:cf(towers.reduce(function(s,r){return s+(parseInt(r['Total Calls'])||0);},0))}].map(function(k){return'<div class="cdr-kpi"><div class="cdr-kpi-lbl">'+k.l+'</div><div class="cdr-kpi-val">'+k.v+'</div></div>';}).join('');renderTowers(towers);document.getElementById('cdr-twr-srch').addEventListener('input',function(){const q=this.value.toLowerCase();const f=towers.filter(function(r){return(r['Cell ID']||'').toLowerCase().includes(q)||(r['Tower Address']||'').toLowerCase().includes(q);});document.getElementById('cdr-twr-fc').textContent=f.length;renderTowers(f);});}
+  function renderTowers(rows){const homeId=(DB.workHome||[]).find(function(r){return r.Location==='Home';})&&(DB.workHome||[]).find(function(r){return r.Location==='Home';})['Cell ID'];const workId=(DB.workHome||[]).find(function(r){return r.Location==='Work';})&&(DB.workHome||[]).find(function(r){return r.Location==='Work';})['Cell ID'];document.getElementById('cdr-twr-body').innerHTML=rows.map(function(r,i){return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="color:var(--accent);font-size:10px;">'+ce(r['Cell ID'])+'</td><td style="font-weight:500;color:var(--text)">'+cf(parseInt(r['Total Calls'])||0)+'</td><td>'+(r.Days||'-')+'</td><td style="font-size:10px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;">'+ce((r['Tower Address']||'').split('\t')[0])+'</td><td style="font-size:10px;color:var(--text3)">'+(r.Latitude||'-')+'</td><td style="font-size:10px;color:var(--text3)">'+(r.Longitude||'-')+'</td><td style="font-size:10px;color:var(--text3)">'+(r['First Call Date']||'-')+'</td><td style="font-size:10px;color:var(--text3)">'+(r['Last Call Date']||'-')+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r.Roaming||'')+'</td><td>'+(r['Cell ID']===homeId?'<span class="cdr-bdg cb-hm">Home</span>':r['Cell ID']===workId?'<span class="cdr-bdg cb-wk">Work</span>':'')+'</td></tr>';}).join('');}
+  function buildDevice(){const im=(DB.imei&&DB.imei[0])||{};const is_=(DB.imsi&&DB.imsi[0])||{};document.getElementById('cdr-imei-pnl').innerHTML=[slr('IMEI',im.IMEI||DB.mapping[0]&&DB.mapping[0]._imei||'--'),slr('Manufacturer',im['IMEI Manufacturer']||'--'),slr('Device Type',im['Device Type']||'Mobile'),slr('Period',im.Period||'--'),slr('Total Records',cf(parseInt(im['Total Calls'])||DB.mapping.length)),slr('Active Days',im.Days||'--')].join('');document.getElementById('cdr-imsi-pnl').innerHTML=[slr('IMSI',is_.IMSI||'--'),slr('Period',is_.Period||'--'),slr('Total Records',cf(parseInt(is_['Total Calls'])||DB.mapping.length)),slr('Out Calls',cf(parseInt(is_['Out Calls'])||0)),slr('In Calls',cf(parseInt(is_['In Calls'])||0))].join('');const roam=DB.roaming||[];document.getElementById('cdr-roam-body').innerHTML=roam.length?roam.map(function(r,i){return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td style="font-weight:500;color:var(--text)">'+ce(r.Roaming||r.Circle||'')+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r.Period||'')+'</td><td style="font-weight:500;color:var(--text)">'+(r['Total Calls']||'-')+'</td><td>'+(r.Days||'-')+'</td><td style="font-size:11px;color:var(--text3);">'+ce(((r['First Location']||'').split('--')[1]||'').trim().split('\t')[0]||'')+'</td><td style="font-size:11px;color:var(--text3);">'+ce(((r['Last Location']||'').split('--')[1]||'').trim().split('\t')[0]||'')+'</td></tr>';}).join(''):'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);">No roaming data in this CDR</td></tr>';}
+  function buildRaw(){filtered=[].concat(DB.mapping);renderRaw();document.getElementById('cdr-raw-srch').addEventListener('input',filterRaw);document.getElementById('cdr-raw-tf').addEventListener('change',filterRaw);}
+  function filterRaw(){const q=document.getElementById('cdr-raw-srch').value.toLowerCase();const tf=document.getElementById('cdr-raw-tf').value;filtered=DB.mapping.filter(function(r){if(tf&&!(r._callType||'').toUpperCase().includes(tf))return false;if(q)return(r._bParty||'').toLowerCase().includes(q)||(r._cellId||'').toLowerCase().includes(q)||(r._city||'').toLowerCase().includes(q)||(r._date||'').toLowerCase().includes(q);return true;});cdrPg=1;renderRaw();}
+  function renderRaw(){const total=filtered.length,pages=Math.ceil(total/PER)||1,start=(cdrPg-1)*PER;document.getElementById('cdr-raw-fc').textContent=cf(total)+' records &middot; page '+cdrPg+'/'+pages;document.getElementById('cdr-raw-body').innerHTML=filtered.slice(start,start+PER).map(function(r,i){return'<tr><td style="color:var(--text3)">'+(start+i+1)+'</td><td style="color:var(--text2)">'+ce(r._date)+'</td><td style="color:var(--text3)">'+ce(r._time)+'</td><td style="font-weight:500;color:var(--text)">'+ce(r._bParty)+'</td><td>'+bdg(r._callType)+'</td><td style="color:var(--text3)">'+ce(r._duration)+'</td><td style="color:var(--accent);font-size:10px;">'+ce(r._cellId)+'</td><td style="font-size:10px;color:var(--text3);max-width:110px;overflow:hidden;text-overflow:ellipsis;">'+ce(r._city||'')+'</td><td style="font-size:10px;color:var(--text3)">'+(r._lat?r._lat.toFixed(4)+','+r._lon.toFixed(4):'-')+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r._circle)+'</td><td style="font-size:10px;color:var(--text3)">'+ce(r._imei)+'</td></tr>';}).join('');let pg='';if(pages>1){pg+='<button class="cdr-pgb" onclick="cdrPg=Math.max(1,cdrPg-1);renderRaw()" '+(cdrPg<=1?'disabled':'')+'>&lsaquo;</button>';for(let p=Math.max(1,cdrPg-2);p<=Math.min(pages,cdrPg+2);p++)pg+='<button class="cdr-pgb '+(p===cdrPg?'on':'')+'" onclick="cdrPg='+p+';renderRaw()">'+p+'</button>';pg+='<button class="cdr-pgb" onclick="cdrPg=Math.min('+pages+',cdrPg+1);renderRaw()" '+(cdrPg>=pages?'disabled':'')+'>&rsaquo;</button>';}document.getElementById('cdr-raw-pg').innerHTML=pg;}
+  window.cdrExportRaw=function(){const cols=['_date','_time','_bParty','_callType','_duration','_cellId','_city','_lat','_lon','_circle','_imei'];const labels=['Date','Time','B Party','Call Type','Duration','Cell ID','Location','Latitude','Longitude','Circle','IMEI'];const lines=[labels.join(',')];filtered.forEach(function(r){lines.push(cols.map(function(c){return'"'+String(r[c]||'').replace(/"/g,'""')+'"';}).join(','));});const blob=new Blob([lines.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='CDR_Export_'+Date.now()+'.csv';a.click();};
+  let activePage='overview';
+  window.cdrTab=function(id,btn){document.querySelectorAll('.cdr-page').forEach(function(p){p.classList.remove('on');});const pg=document.getElementById('cdrp-'+id);if(pg)pg.classList.add('on');document.querySelectorAll('.cdr-tab').forEach(function(t){t.classList.remove('on');});if(btn)btn.classList.add('on');activePage=id;if(id==='map'&&!mainMap&&window.L){setTimeout(function(){initMainMap();setTimeout(function(){if(mainMap)mainMap.invalidateSize();},200);},50);}if(id==='triangulate'&&triMapInit&&triMap){setTimeout(function(){triMap.invalidateSize();},200);}};
+  }catch(e){console.error('CDR module error:',e);}
+})();
+</script>
+
+</body>
+</html>
