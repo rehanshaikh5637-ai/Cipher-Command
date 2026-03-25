@@ -413,35 +413,17 @@ select.cdr-sel:focus{border-color:var(--accent);}
   </nav>
 
   <main class="main">
-    <!-- DASHBOARD -->
-    <div id="panel-dashboard" class="panel active">
-      <div class="panel-header"><div class="panel-title">Intelligence Dashboard</div><div class="panel-sub">SESSION ACTIVE &middot; OPERATOR: INVESTIGATOR</div></div>
-      <div class="metrics-row">
-        <div class="metric-card"><div class="metric-label">Queries Today</div><div class="metric-value metric-accent" id="total-queries">0</div><div class="metric-sub">All modules</div></div>
-        <div class="metric-card"><div class="metric-label">Profiles Found</div><div class="metric-value metric-success" id="profiles-found">0</div><div class="metric-sub">Username hits</div></div>
-        <div class="metric-card"><div class="metric-label">Breaches Found</div><div class="metric-value metric-danger" id="breach-count">0</div><div class="metric-sub">Email breaches</div></div>
-        <div class="metric-card"><div class="metric-label">CDR Records</div><div class="metric-value metric-warning" id="cdr-count">0</div><div class="metric-sub">Calls analyzed</div></div>
-      </div>
-      <div class="dash-grid">
-        <div class="card">
-          <div class="card-header"><div class="card-title">Recent Investigations</div></div>
-          <div id="recent-list"><div class="empty-state">No investigations yet.</div></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Quick Launch</div></div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('username')">&#8594; Username OSINT</button>
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('email')">&#8594; Email Investigation</button>
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('phone')">&#8594; Phone OSINT</button>
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('ip')">&#8594; IP Lookup</button>
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('domain')">&#8594; Domain Lookup</button>
-            <button class="btn-outline" style="text-align:left;font-size:11px;" onclick="switchPanel('crypto')">&#8594; Crypto Wallet Tracing</button>
-          </div>
-        </div>
+    <!-- API SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="panel-header"><div class="panel-title">API Configuration</div><div class="panel-sub">CONFIGURE EXTERNAL INTELLIGENCE SOURCES</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="card"><div class="card-header"><div class="card-title">HaveIBeenPwned</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Breach &amp; paste detection for email OSINT.</div><input type="password" id="hibp-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('hibp')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">Hunter.io</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Email validation and domain profiling.</div><input type="password" id="hunter-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('hunter')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">NumVerify</div><span class="badge badge-warning">KEY REQUIRED</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">Phone number carrier and geolocation lookup.</div><input type="password" id="numverify-key" class="search-input" placeholder="Enter API key..." style="margin-bottom:8px;padding-left:16px;"/><button class="btn-primary" onclick="saveKey('numverify')" style="font-size:11px;padding:8px 16px;">Save Key</button></div>
+        <div class="card"><div class="card-header"><div class="card-title">Sherlock DB</div><span class="badge badge-success">BUILT-IN</span></div><div style="margin-bottom:10px;font-size:12px;color:var(--text3);">532 platform username database &mdash; no key required.</div><div style="font-family:var(--mono);font-size:12px;color:var(--success);">&#10003; 532 platforms loaded</div></div>
       </div>
     </div>
-
-    </main>
+  </main>
 </div>
 </main>
 </div>
@@ -607,6 +589,8 @@ function addRecent(type,query){
   el.innerHTML=recentInvestigations.map(r=>`<div class="recent-item"><span class="badge badge-info">${r.type}</span><span class="recent-query">${r.query}</span><span class="recent-time">${r.time}</span></div>`).join('');
 }
 
+
+// ── SETTINGS ──
 
 
 </script>

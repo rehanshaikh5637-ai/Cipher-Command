@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HeartSINT — Loading</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/heartsint.css"/>
+</head>
+<body>
+<div id="loading-overlay" style="display:flex;">
+  <div class="ld-container">
+    <div class="ld-heart-wrap">
+      <div class="ld-pulse-ring"></div>
+      <div class="ld-pulse-ring"></div>
+      <svg class="ld-heart-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M32 54S6 38 6 20a14 14 0 0 1 26-7.1A14 14 0 0 1 58 20c0 18-26 34-26 34z" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.5" stroke-linejoin="round"/>
+        <polyline points="14,30 20,30 23,24 26,36 29,28 32,32 35,26 38,30 50,30" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+      </svg>
+    </div>
+    <div class="ld-brand">Heart<span>SINT</span></div>
+    <div class="ld-tagline">Intelligence Platform</div>
+    <div class="ld-bar-wrap"><div class="ld-bar-track"><div class="ld-bar-fill" id="ld-bar-fill"></div></div></div>
+    <div class="ld-status">LOADING...</div>
+  </div>
+  <div class="ld-stamp">LEA RESTRICTED</div>
+</div>
+<script>
+  const bar = document.getElementById('ld-bar-fill');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    bar.style.transition = 'width 3000ms linear';
+    bar.style.width = '100%';
+  }));
+  setTimeout(() => {
+    document.getElementById('loading-overlay').classList.add('fade-out');
+    setTimeout(() => window.location.href = 'dashboard.html', 600);
+  }, 3200);
+</script>
+</body>
+</html>
